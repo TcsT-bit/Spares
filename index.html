@@ -238,11 +238,12 @@ function showTab(tab){
 }
 
 function showAdmin(){
+  document.getElementById('browseScreen').classList.add('hidden');
   if(!isAdmin){
-    document.getElementById('browseScreen').classList.add('hidden');
     document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('adminScreen').classList.add('hidden');
   } else {
-    document.getElementById('browseScreen').classList.add('hidden');
+    document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('adminScreen').classList.remove('hidden');
   }
 }
