@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SparesHub SA - Used Tyres, Rims & Parts | GOD TIER</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:#0a0a0a;color:#f1f5f9}
+.header{background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:18px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.header h1{font-size:22px;display:flex;align-items:center;gap:10px}
+.header.sub{font-size:12px;color:#cbd5e1;margin-top:4px}
+.container{max-width:1200px;margin:0 auto;padding:16px}
+
+.search-bar{background:#111827;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #1f2937}
+.search-bar input{width:100%;padding:14px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:16px;margin-bottom:10px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+.filters select{flex:1;min-width:120px;padding:12px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:14px}
+
+.tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto}
+.tab{flex:1;min-width:100px;padding:12px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
+.tab.active{background:#2563eb}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s}
+.card:hover{transform:translateY(-4px);border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.2)}
+.card-img{width:100%;height:200px;object-fit:cover;background:#0f172a}
+.card-body{padding:14px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px;color:#3b82f6}
+.card-price{font-size:22px;font-weight:800;color:#16a34a;margin:8px 0}
+.card-info{font-size:13px;color:#9ca3af;margin:4px 0}
+.condition{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-top:6px}
+.cond-good{background:#16a34a20;color:#16a34a;border:1px solid #16a34a}
+.cond-fair{background:#ca8a0420;color:#fbbf24;border:1px solid #ca8a04}
+.cond-parts{background:#dc262620;color:#f87171;border:1px solid #dc2626}
+.cond-new{background:#3b82f620;color:#60a5fa;border:1px solid #3b82f6}
+
+.btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px;transition:0.2s}
+.btn:active{transform:scale(0.97)}
+.btn-whatsapp{background:#16a34a;color:white}
+.btn-call{background:#0ea5e9;color:white}
+.btn-sell{background:#7c3aed;color:white;padding:16px;font-size:16px}
+
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
+.modal.active{display:flex}
+.modal-card{background:#111827;padding:24px;border-radius:18px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
+.modal-card h2{margin-bottom:16px;color:#3b82f6}
+.modal-card input,.modal-card textarea,.modal-card select{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
+.label{font-size:12px;color:#9ca3af;margin-bottom:4px;margin-top:8px}
+
+.featured-badge{position:absolute;background:#fbbf24;color:#0a0a0a;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;top:10px;right:10px}
+.card-img-wrap{position:relative}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.stat{background:#1e3a8a;padding:16px;border-radius:12px;text-align:center}
+.stat-num{font-size:28px;font-weight:800;color:#60a5fa}
+.stat-label{font-size:12px;color:#cbd5e1}
+
+.location{color:#9ca3af;font-size:12px;display:flex;align-items:center;gap:4px;margin-top:6px}
+
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔧 SparesHub SA</h1>
+  <div class="sub">Used Tyres, Rims, Parts & Workshop Tools | Polokwane → All SA</div>
+</div>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active Listings</div></div>
+    <div class="stat"><div class="stat-num" id="statTyres">0</div><div class="stat-label">Tyres/Rims</div></div>
+    <div class="stat"><div class="stat-num" id="statParts">0</div><div class="stat-label">Parts</div></div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search: Toyota Hilux 15 inch rim, Ford Ranger tyre...">
+    <div class="filters">
+      <select id="categoryFilter" onchange="filterListings()">
+        <option value="all">All Categories</option>
+        <option value="tyres">Tyres</option>
+        <option value="rims">Rims/Mags</option>
+        <option value="engine">Engine Parts</option>
+        <option value="body">Body Parts</option>
+        <option value="electrical">Electrical</option>
+        <option value="workshop">Workshop Tools</option>
+      </select>
+      <select id="conditionFilter" onchange="filterListings()">
+        <option value="all">All Conditions</option>
+        <option value="new">New</option>
+        <option value="good">Used - Good</option>
+        <option value="fair">Used - Fair</option>
+        <option value="parts">For Parts Only</option>
+      </select>
+      <select id="makeFilter" onchange="filterListings()">
+        <option value="all">All Makes</option>
+        <option value="toyota">Toyota</option>
+        <option value="ford">Ford</option>
+        <option value="vw">VW</option>
+        <option value="nissan">Nissan</option>
+        <option value="bmw">BMW</option>
+        <option value="universal">Universal</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('browse')">Browse</div>
+    <div class="tab" onclick="showTab('tyres')">Tyres/Rims</div>
+    <div class="tab" onclick="showTab('parts')">Parts</div>
+    <div class="tab" onclick="showTab('workshop')">Workshop</div>
+  </div>
+
+  <button class="btn btn-sell" onclick="openSellModal()">+ SELL YOUR SPARES - FREE LISTING</button>
+
+  <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
+
+</div>
+
+<!-- SELL MODAL -->
+<div id="sellModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <h2>List Your Spare Part</h2>
+    <div class="label">Your Name</div>
+    <input id="sellerName" placeholder="John Doe">
+    <div class="label">WhatsApp Number +27...</div>
+    <input id="sellerWhatsapp" placeholder="0712345678">
+    <div class="label">Location</div>
+    <input id="sellerLocation" placeholder="Polokwane, Limpopo" value="Polokwane, Limpopo">
+
+    <div class="label">Category</div>
+    <select id="itemCategory">
+      <option value="tyres">Tyres</option>
+      <option value="rims">Rims/Mags</option>
+      <option value="engine">Engine Parts</option>
+      <option value="body">Body Parts</option>
+      <option value="electrical">Electrical</option>
+      <option value="workshop">Workshop Tools</option>
+    </select>
+
+    <div class="label">Vehicle Make/Model/Year</div>
+    <input id="itemMake" placeholder="Toyota Hilux 2018">
+
+    <div class="label">Part Description</div>
+    <textarea id="itemDesc" rows="3" placeholder="15 inch rim, 6x139 PCD, minor scratches"></textarea>
+
+    <div class="label">Price R</div>
+    <input type="number" id="itemPrice" placeholder="2500">
+
+    <div class="label">Condition</div>
+    <select id="itemCondition">
+      <option value="new">New</option>
+      <option value="good">Used - Good</option>
+      <option value="fair">Used - Fair</option>
+      <option value="parts">For Parts Only</option>
+    </select>
+
+    <div class="label">Upload Photos</div>
+    <input type="file" id="itemPhotos" multiple accept="image/*">
+
+    <button class="btn btn-whatsapp" onclick="submitListing()">List Item FREE</button>
+    <button class="btn" style="background:#4b5563" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "XXX",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let allListings = [];
+let currentTab = 'browse';
+
+db.collection('spareshub_listings').where('status','==','active').onSnapshot(snap=>{
+  allListings = snap.docs.map(d=>({id:d.id,...d.data()}));
+  filterListings();
+  updateStats();
+});
+
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  filterListings();
+}
+
+function filterListings(){
+  let search = document.getElementById('searchInput').value.toLowerCase();
+  let cat = document.getElementById('categoryFilter').value;
+  let cond = document.getElementById('conditionFilter').value;
+  let make = document.getElementById('makeFilter').value;
+
+  let filtered = allListings.filter(item=>{
+    let matchSearch = item.desc.toLowerCase().includes(search) || item.make.toLowerCase().includes(search);
+    let matchCat = cat==='all' || item.category===cat;
+    let matchCond = cond==='all' || item.condition===cond;
+    let matchMake = make==='all' || item.make.toLowerCase().includes(make);
+    let matchTab = currentTab==='browse' ||
+                   (currentTab==='tyres' && ['tyres','rims'].includes(item.category)) ||
+                   (currentTab==='parts' &&!['tyres','rims','workshop'].includes(item.category)) ||
+                   (currentTab==='workshop' && item.category==='workshop');
+    return matchSearch && matchCat && matchCond && matchMake && matchTab;
+  });
+
+  renderListings(filtered);
+}
+
+function renderListings(listings){
+  let html = '';
+  listings.forEach(item=>{
+    let condClass = 'cond-'+item.condition;
+    let condText = item.condition==='good'?'Used - Good':item.condition==='fair'?'Used - Fair':item.condition==='parts'?'For Parts Only':'New';
+    let featured = item.featured?'<div class="featured-badge">FEATURED</div>':'';
+    let img = item.photos && item.photos[0]? item.photos[0] : 'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';
+
+    html += `<div class="card">
+      <div class="card-img-wrap">
+        <img src="${img}" class="card-img">
+        ${featured}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${item.make}</div>
+        <div class="card-info">${item.desc}</div>
+        <div class="card-price">R${item.price.toLocaleString()}</div>
+        <span class="condition ${condClass}">${condText}</span>
+        <div class="location">📍 ${item.location}</div>
+        <button class="btn btn-whatsapp" onclick="contactSeller('${item.whatsapp}','${item.make}','${item.id}')">WhatsApp Seller</button>
+        <button class="btn btn-call" onclick="callSeller('${item.whatsapp}')">Call Now</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('listingsGrid').innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares found. Be the first to list!</div>';
+}
+
+function contactSeller(whatsapp, item, listingId){
+  let waNum = whatsapp.replace(/\D/g,'');
+  if(waNum.startsWith('0')) waNum = '27' + waNum.slice(1);
+  let msg = `Hi, I'm interested in: ${item} on SparesHub SA. Is it still available?`;
+  window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`);
+
+  // Track lead for monetization
+  db.collection('spareshub_leads').add({
+    listingId,
+    timestamp: new Date().toISOString(),
+    source: 'whatsapp_click'
+  });
+}
+
+function callSeller(whatsapp){
+  window.location.href = `tel:${whatsapp}`;
+}
+
+function openSellModal(){
+  document.getElementById('sellModal').classList.add('active');
+}
+
+function closeModal(e){
+  if(!e || e.target.id === 'sellModal') document.getElementById('sellModal').classList.remove('active');
+}
+
+async function submitListing(){
+  let name = document.getElementById('sellerName').value;
+  let whatsapp = document.getElementById('sellerWhatsapp').value;
+  let location = document.getElementById('sellerLocation').value;
+  let category = document.getElementById('itemCategory').value;
+  let make = document.getElementById('itemMake').value;
+  let desc = document.getElementById('itemDesc').value;
+  let price = parseFloat(document.getElementById('itemPrice').value);
+  let condition = document.getElementById('itemCondition').value;
+  let files = document.getElementById('itemPhotos').files;
+
+  if(!name ||!whatsapp ||!make ||!desc ||!price) return alert('Fill all fields');
+
+  let photos = [];
+  for(let i=0; i<files.length; i++){
+    let ref = storage.ref(`spares/${Date.now()}_${files[i].name}`);
+    await ref.put(files[i]);
+    let url = await ref.getDownloadURL();
+    photos.push(url);
+  }
+
+  await db.collection('spareshub_listings').add({
+    sellerName: name,
+    whatsapp,
+    location,
+    category,
+    make,
+    desc,
+    price,
+    condition,
+    photos,
+    status: 'active',
+    featured: false,
+    date: new Date().toISOString()
+  });
+
+  alert('Listed successfully! Your spare is now live 🔥');
+  closeModal();
+  document.getElementById('sellModal').querySelectorAll('input,textarea').forEach(i=>i.value='');
+}
+
+function updateStats(){
+  document.getElementById('statListings').textContent = allListings.length;
+  document.getElementById('statTyres').textContent = allListings.filter(i=>['tyres','rims'].includes(i.category)).length;
+  document.getElementById('statParts').textContent = allListings.filter(i=>!['tyres','rims','workshop'].includes(i.category)).length;
+}
+
+document.getElementById('searchInput').addEventListener('input', filterListings);
+</script>
+</body>
+</html>
