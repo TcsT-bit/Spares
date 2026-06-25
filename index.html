@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.1</title>
+<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.2</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
@@ -73,10 +73,16 @@ body{background:#0a0a0a;color:#f1f5f9}
 
 <div class="container" id="app">
 
-<!-- LOGIN SCREEN FOR ADMIN -->
+<!-- LOGIN SCREEN FOR ADMIN WITH HINT -->
 <div id="loginScreen" class="login-box hidden">
   <h2>Admin Login</h2>
   <input type="password" id="adminPass" placeholder="Enter Admin Password" onkeypress="if(event.key==='Enter') adminLogin()">
+  <div style="font-size:12px;color:#6b7280;margin:8px 0;text-align:center">
+    Default Password: <b style="color:#60a5fa">admin123</b>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#9ca3af;margin:10px 0">
+    <input type="checkbox" id="rememberMe"> Remember me on this device
+  </label>
   <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
   <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back to Site</button>
 </div>
@@ -208,7 +214,7 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 // CONFIG - CHANGE THESE
-const ADMIN_PASSWORD = "admin123"; // Change this!
+const ADMIN_PASSWORD = "admin123"; // CHANGE THIS!
 const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
 const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET";
 const PAYFAST_MERCHANT_ID = "YOUR_MERCHANT_ID";
@@ -217,6 +223,13 @@ const PAYFAST_MERCHANT_KEY = "YOUR_MERCHANT_KEY";
 let allListings = [];
 let currentTab = 'browse';
 let isAdmin = false;
+
+// AUTO-LOGIN IF REMEMBERED
+window.onload = function(){
+  if(localStorage.getItem('spareshub_admin') === 'true'){
+    isAdmin = true;
+  }
+}
 
 db.collection('spareshub_listings').onSnapshot(snap=>{
   allListings = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -244,11 +257,15 @@ function showAdmin(){
   }
 }
 
-// FIXED LOGIN - FORCE SCREEN SWITCH
+// FIXED LOGIN WITH REMEMBER ME
 function adminLogin(){
   let pass = document.getElementById('adminPass').value;
+  let remember = document.getElementById('rememberMe').checked;
+
   if(pass === ADMIN_PASSWORD){
     isAdmin = true;
+    if(remember) localStorage.setItem('spareshub_admin', 'true');
+
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('adminScreen').classList.remove('hidden');
     document.getElementById('browseScreen').classList.add('hidden');
@@ -261,6 +278,7 @@ function adminLogin(){
 
 function adminLogout(){
   isAdmin = false;
+  localStorage.removeItem('spareshub_admin');
   document.getElementById('adminScreen').classList.add('hidden');
   showBrowse();
 }
