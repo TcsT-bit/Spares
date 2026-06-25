@@ -249,10 +249,16 @@ function showAdmin(){
 }
 
 function adminLogin(){
-  if(document.getElementById('adminPass').value === ADMIN_PASSWORD){
+  let pass = document.getElementById('adminPass').value;
+  if(pass === ADMIN_PASSWORD){
     isAdmin = true;
-    showAdmin();
-  } else alert('Wrong password');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminScreen').classList.remove('hidden');
+    document.getElementById('adminPass').value = ''; // clear password field
+    loadAdmin(); // refresh pending listings
+  } else {
+    alert('Wrong password');
+  }
 }
 
 function showBrowse(){
