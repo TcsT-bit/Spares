@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SparesHub SA - Used Tyres, Rims & Parts | GOD TIER</title>
+<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.0</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
@@ -25,7 +25,7 @@ body{background:#0a0a0a;color:#f1f5f9}
 .tab.active{background:#2563eb}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.card{background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s}
+.card{background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s;position:relative}
 .card:hover{transform:translateY(-4px);border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.2)}
 .card-img{width:100%;height:200px;object-fit:cover;background:#0f172a}
 .card-body{padding:14px}
@@ -37,12 +37,16 @@ body{background:#0a0a0a;color:#f1f5f9}
 .cond-fair{background:#ca8a0420;color:#fbbf24;border:1px solid #ca8a04}
 .cond-parts{background:#dc262620;color:#f87171;border:1px solid #dc2626}
 .cond-new{background:#3b82f620;color:#60a5fa;border:1px solid #3b82f6}
+.sold-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#16a34a}
 
 .btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px;transition:0.2s}
 .btn:active{transform:scale(0.97)}
 .btn-whatsapp{background:#16a34a;color:white}
 .btn-call{background:#0ea5e9;color:white}
 .btn-sell{background:#7c3aed;color:white;padding:16px;font-size:16px}
+.btn-yellow{background:#ca8a04;color:white}
+.btn-red{background:#dc2626;color:white}
+.btn-cyan{background:#06b6d4;color:white}
 
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
@@ -51,32 +55,47 @@ body{background:#0a0a0a;color:#f1f5f9}
 .modal-card input,.modal-card textarea,.modal-card select{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
 .label{font-size:12px;color:#9ca3af;margin-bottom:4px;margin-top:8px}
 
-.featured-badge{position:absolute;background:#fbbf24;color:#0a0a0a;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;top:10px;right:10px}
+.featured-badge{position:absolute;background:#fbbf24;color:#0a0a0a;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;top:10px;right:10px;z-index:10}
 .card-img-wrap{position:relative}
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
 .stat{background:#1e3a8a;padding:16px;border-radius:12px;text-align:center}
 .stat-num{font-size:28px;font-weight:800;color:#60a5fa}
 .stat-label{font-size:12px;color:#cbd5e1}
 
 .location{color:#9ca3af;font-size:12px;display:flex;align-items:center;gap:4px;margin-top:6px}
+.admin-actions{display:flex;gap:6px;margin-top:8px}
+.admin-actions button{padding:8px;font-size:12px;width:auto}
 
-@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}}
+.login-box{max-width:400px;margin:100px auto;padding:24px;background:#111827;border-radius:18px;border:1px solid #1f2937}
+
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🔧 SparesHub SA</h1>
+  <h1>🔧 SparesHub SA PRO</h1>
   <div class="sub">Used Tyres, Rims, Parts & Workshop Tools | Polokwane → All SA</div>
 </div>
 
-<div class="container">
+<div class="container" id="app">
 
+<!-- LOGIN SCREEN FOR ADMIN -->
+<div id="loginScreen" class="login-box hidden">
+  <h2>Admin Login</h2>
+  <input type="password" id="adminPass" placeholder="Enter Admin Password">
+  <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
+  <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back to Site</button>
+</div>
+
+<!-- MAIN BROWSE -->
+<div id="browseScreen">
   <div class="stats">
-    <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active Listings</div></div>
+    <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active</div></div>
     <div class="stat"><div class="stat-num" id="statTyres">0</div><div class="stat-label">Tyres/Rims</div></div>
     <div class="stat"><div class="stat-num" id="statParts">0</div><div class="stat-label">Parts</div></div>
+    <div class="stat"><div class="stat-num" id="statLeads">0</div><div class="stat-label">Leads Today</div></div>
   </div>
 
   <div class="search-bar">
@@ -115,11 +134,20 @@ body{background:#0a0a0a;color:#f1f5f9}
     <div class="tab" onclick="showTab('tyres')">Tyres/Rims</div>
     <div class="tab" onclick="showTab('parts')">Parts</div>
     <div class="tab" onclick="showTab('workshop')">Workshop</div>
+    <div class="tab" onclick="showAdmin()">Admin</div>
   </div>
 
   <button class="btn btn-sell" onclick="openSellModal()">+ SELL YOUR SPARES - FREE LISTING</button>
 
   <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminScreen" class="hidden">
+  <h2>Admin Panel - Approve & Manage</h2>
+  <div id="adminList"></div>
+  <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back to Site</button>
+</div>
 
 </div>
 
@@ -161,10 +189,12 @@ body{background:#0a0a0a;color:#f1f5f9}
       <option value="parts">For Parts Only</option>
     </select>
 
-    <div class="label">Upload Photos</div>
+    <div class="label">Upload Photos - Cloudinary Auto Compress</div>
     <input type="file" id="itemPhotos" multiple accept="image/*">
 
-    <button class="btn btn-whatsapp" onclick="submitListing()">List Item FREE</button>
+    <div class="label">Boost Listing? R50 for 7 days Featured</div>
+    <button class="btn btn-yellow" onclick="payForFeatured()">Pay R50 + List</button>
+    <button class="btn btn-whatsapp" onclick="submitListing(false)">List FREE</button>
     <button class="btn" style="background:#4b5563" onclick="closeModal()">Cancel</button>
   </div>
 </div>
@@ -182,12 +212,21 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// CONFIG - CHANGE THESE
+const ADMIN_PASSWORD = "admin123"; // Change this!
+const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME"; // Get from cloudinary.com
+const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET"; // Create unsigned preset
+const PAYFAST_MERCHANT_ID = "YOUR_MERCHANT_ID";
+const PAYFAST_MERCHANT_KEY = "YOUR_MERCHANT_KEY";
+
 let allListings = [];
 let currentTab = 'browse';
+let isAdmin = false;
 
-db.collection('spareshub_listings').where('status','==','active').onSnapshot(snap=>{
+db.collection('spareshub_listings').onSnapshot(snap=>{
   allListings = snap.docs.map(d=>({id:d.id,...d.data()}));
   filterListings();
+  loadAdmin();
   updateStats();
 });
 
@@ -198,6 +237,29 @@ function showTab(tab){
   filterListings();
 }
 
+function showAdmin(){
+  if(!isAdmin){
+    document.getElementById('browseScreen').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+  } else {
+    document.getElementById('browseScreen').classList.add('hidden');
+    document.getElementById('adminScreen').classList.remove('hidden');
+  }
+}
+
+function adminLogin(){
+  if(document.getElementById('adminPass').value === ADMIN_PASSWORD){
+    isAdmin = true;
+    showAdmin();
+  } else alert('Wrong password');
+}
+
+function showBrowse(){
+  document.getElementById('browseScreen').classList.remove('hidden');
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('adminScreen').classList.add('hidden');
+}
+
 function filterListings(){
   let search = document.getElementById('searchInput').value.toLowerCase();
   let cat = document.getElementById('categoryFilter').value;
@@ -205,6 +267,7 @@ function filterListings(){
   let make = document.getElementById('makeFilter').value;
 
   let filtered = allListings.filter(item=>{
+    if(item.status!=='active' &&!isAdmin) return false;
     let matchSearch = item.desc.toLowerCase().includes(search) || item.make.toLowerCase().includes(search);
     let matchCat = cat==='all' || item.category===cat;
     let matchCond = cond==='all' || item.condition===cond;
@@ -225,12 +288,14 @@ function renderListings(listings){
     let condClass = 'cond-'+item.condition;
     let condText = item.condition==='good'?'Used - Good':item.condition==='fair'?'Used - Fair':item.condition==='parts'?'For Parts Only':'New';
     let featured = item.featured?'<div class="featured-badge">FEATURED</div>':'';
+    let soldOverlay = item.status==='sold'?'<div class="sold-overlay">SOLD</div>':'';
     let img = item.photos && item.photos[0]? item.photos[0] : 'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';
 
     html += `<div class="card">
       <div class="card-img-wrap">
         <img src="${img}" class="card-img">
         ${featured}
+        ${soldOverlay}
       </div>
       <div class="card-body">
         <div class="card-title">${item.make}</div>
@@ -238,12 +303,47 @@ function renderListings(listings){
         <div class="card-price">R${item.price.toLocaleString()}</div>
         <span class="condition ${condClass}">${condText}</span>
         <div class="location">📍 ${item.location}</div>
+        ${item.status==='active'? `
         <button class="btn btn-whatsapp" onclick="contactSeller('${item.whatsapp}','${item.make}','${item.id}')">WhatsApp Seller</button>
-        <button class="btn btn-call" onclick="callSeller('${item.whatsapp}')">Call Now</button>
+        <button class="btn btn-call" onclick="callSeller('${item.whatsapp}')">Call Now</button>` : ''}
       </div>
     </div>`;
   });
   document.getElementById('listingsGrid').innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares found. Be the first to list!</div>';
+}
+
+function loadAdmin(){
+  let html = '';
+  allListings.filter(i=>i.status==='pending').forEach(item=>{
+    html += `<div class="card" style="margin-bottom:12px">
+      <div class="card-body">
+        <div class="card-title">${item.make} - R${item.price}</div>
+        <div class="card-info">${item.desc}<br>Seller: ${item.sellerName} | ${item.whatsapp}</div>
+        <div class="admin-actions">
+          <button class="btn btn-green" onclick="approveListing('${item.id}')">Approve</button>
+          <button class="btn btn-red" onclick="deleteListing('${item.id}')">Delete</button>
+          <button class="btn btn-yellow" onclick="markFeatured('${item.id}')">Make Featured</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('adminList').innerHTML = html || '<div style="color:#6b7280">No pending listings</div>';
+}
+
+async function approveListing(id){
+  await db.collection('spareshub_listings').doc(id).update({status:'active'});
+  alert('Approved!');
+}
+
+async function deleteListing(id){
+  if(confirm('Delete this listing?')){
+    await db.collection('spareshub_listings').doc(id).delete();
+  }
+}
+
+async function markFeatured(id){
+  await db.collection('spareshub_listings').doc(id).update({featured:true});
+  alert('Featured for 7 days!');
 }
 
 function contactSeller(whatsapp, item, listingId){
@@ -252,10 +352,10 @@ function contactSeller(whatsapp, item, listingId){
   let msg = `Hi, I'm interested in: ${item} on SparesHub SA. Is it still available?`;
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`);
 
-  // Track lead for monetization
   db.collection('spareshub_leads').add({
     listingId,
     timestamp: new Date().toISOString(),
+    date: new Date().toDateString(),
     source: 'whatsapp_click'
   });
 }
@@ -272,7 +372,58 @@ function closeModal(e){
   if(!e || e.target.id === 'sellModal') document.getElementById('sellModal').classList.remove('active');
 }
 
-async function submitListing(){
+// CLOUDINARY UPLOAD - NO STORAGE COST
+async function uploadToCloudinary(file){
+  let formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD);
+
+  let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  let data = await res.json();
+  return data.secure_url; // Auto resized + CDN
+}
+
+// PAYFAST INTEGRATION
+function payForFeatured(){
+  let itemName = document.getElementById('itemMake').value || 'Featured Listing';
+  let itemId = Date.now();
+
+  let form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://sandbox.payfast.co.za/eng/process'; // Change to payfast.co.za for live
+
+  let fields = {
+    merchant_id: PAYFAST_MERCHANT_ID,
+    merchant_key: PAYFAST_MERCHANT_KEY,
+    return_url: window.location.href,
+    cancel_url: window.location.href,
+    notify_url: window.location.href,
+    name_first: document.getElementById('sellerName').value,
+    email_address: 'test@test.com',
+    m_payment_id: itemId,
+    amount: '50.00',
+    item_name: 'Featured Listing 7 Days - ' + itemName
+  };
+
+  for(let key in fields){
+    let input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = fields[key];
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+
+  // After payment, user returns and we call submitListing(true)
+  localStorage.setItem('pendingFeatured', 'true');
+}
+
+async function submitListing(isFeatured){
   let name = document.getElementById('sellerName').value;
   let whatsapp = document.getElementById('sellerWhatsapp').value;
   let location = document.getElementById('sellerLocation').value;
@@ -287,9 +438,7 @@ async function submitListing(){
 
   let photos = [];
   for(let i=0; i<files.length; i++){
-    let ref = storage.ref(`spares/${Date.now()}_${files[i].name}`);
-    await ref.put(files[i]);
-    let url = await ref.getDownloadURL();
+    let url = await uploadToCloudinary(files[i]); // Cloudinary = free + fast
     photos.push(url);
   }
 
@@ -303,23 +452,38 @@ async function submitListing(){
     price,
     condition,
     photos,
-    status: 'active',
-    featured: false,
-    date: new Date().toISOString()
+    status: 'pending', // Admin must approve first
+    featured: isFeatured || localStorage.getItem('pendingFeatured')==='true',
+    date: new Date().toISOString(),
+    featuredExpiry: isFeatured? new Date(Date.now() + 7*24*60*60*1000).toISOString() : null
   });
 
-  alert('Listed successfully! Your spare is now live 🔥');
+  localStorage.removeItem('pendingFeatured');
+  alert('Submitted! Admin will approve your listing within 1 hour 🔥');
   closeModal();
   document.getElementById('sellModal').querySelectorAll('input,textarea').forEach(i=>i.value='');
 }
 
-function updateStats(){
-  document.getElementById('statListings').textContent = allListings.length;
-  document.getElementById('statTyres').textContent = allListings.filter(i=>['tyres','rims'].includes(i.category)).length;
-  document.getElementById('statParts').textContent = allListings.filter(i=>!['tyres','rims','workshop'].includes(i.category)).length;
+async function updateStats(){
+  document.getElementById('statListings').textContent = allListings.filter(i=>i.status==='active').length;
+  document.getElementById('statTyres').textContent = allListings.filter(i=>['tyres','rims'].includes(i.category) && i.status==='active').length;
+  document.getElementById('statParts').textContent = allListings.filter(i=>!['tyres','rims','workshop'].includes(i.category) && i.status==='active').length;
+
+  let today = new Date().toDateString();
+  let leadsSnap = await db.collection('spareshub_leads').where('date','==',today).get();
+  document.getElementById('statLeads').textContent = leadsSnap.size;
 }
 
 document.getElementById('searchInput').addEventListener('input', filterListings);
+
+// Auto-remove expired featured listings
+setInterval(()=>{
+  allListings.forEach(item=>{
+    if(item.featured && item.featuredExpiry && new Date(item.featuredExpiry) < new Date()){
+      db.collection('spareshub_listings').doc(item.id).update({featured:false});
+    }
+  });
+}, 60000);
 </script>
 </body>
 </html>
