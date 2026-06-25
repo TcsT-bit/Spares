@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.0</title>
+<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.1</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
@@ -14,16 +14,13 @@ body{background:#0a0a0a;color:#f1f5f9}
 .header h1{font-size:22px;display:flex;align-items:center;gap:10px}
 .header.sub{font-size:12px;color:#cbd5e1;margin-top:4px}
 .container{max-width:1200px;margin:0 auto;padding:16px}
-
 .search-bar{background:#111827;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #1f2937}
 .search-bar input{width:100%;padding:14px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:16px;margin-bottom:10px}
 .filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
 .filters select{flex:1;min-width:120px;padding:12px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:14px}
-
 .tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto}
 .tab{flex:1;min-width:100px;padding:12px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
 .tab.active{background:#2563eb}
-
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 .card{background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s;position:relative}
 .card:hover{transform:translateY(-4px);border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.2)}
@@ -38,7 +35,6 @@ body{background:#0a0a0a;color:#f1f5f9}
 .cond-parts{background:#dc262620;color:#f87171;border:1px solid #dc2626}
 .cond-new{background:#3b82f620;color:#60a5fa;border:1px solid #3b82f6}
 .sold-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#16a34a}
-
 .btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px;transition:0.2s}
 .btn:active{transform:scale(0.97)}
 .btn-whatsapp{background:#16a34a;color:white}
@@ -47,28 +43,24 @@ body{background:#0a0a0a;color:#f1f5f9}
 .btn-yellow{background:#ca8a04;color:white}
 .btn-red{background:#dc2626;color:white}
 .btn-cyan{background:#06b6d4;color:white}
-
+.btn-green{background:#16a34a;color:white}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
 .modal-card{background:#111827;padding:24px;border-radius:18px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
 .modal-card h2{margin-bottom:16px;color:#3b82f6}
 .modal-card input,.modal-card textarea,.modal-card select{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
 .label{font-size:12px;color:#9ca3af;margin-bottom:4px;margin-top:8px}
-
 .featured-badge{position:absolute;background:#fbbf24;color:#0a0a0a;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;top:10px;right:10px;z-index:10}
 .card-img-wrap{position:relative}
-
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
 .stat{background:#1e3a8a;padding:16px;border-radius:12px;text-align:center}
 .stat-num{font-size:28px;font-weight:800;color:#60a5fa}
 .stat-label{font-size:12px;color:#cbd5e1}
-
 .location{color:#9ca3af;font-size:12px;display:flex;align-items:center;gap:4px;margin-top:6px}
-.admin-actions{display:flex;gap:6px;margin-top:8px}
-.admin-actions button{padding:8px;font-size:12px;width:auto}
-
+.admin-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.admin-actions button{padding:8px;font-size:12px;width:auto;flex:1}
 .login-box{max-width:400px;margin:100px auto;padding:24px;background:#111827;border-radius:18px;border:1px solid #1f2937}
-
+.hidden{display:none!important}
 @media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -84,7 +76,7 @@ body{background:#0a0a0a;color:#f1f5f9}
 <!-- LOGIN SCREEN FOR ADMIN -->
 <div id="loginScreen" class="login-box hidden">
   <h2>Admin Login</h2>
-  <input type="password" id="adminPass" placeholder="Enter Admin Password">
+  <input type="password" id="adminPass" placeholder="Enter Admin Password" onkeypress="if(event.key==='Enter') adminLogin()">
   <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
   <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back to Site</button>
 </div>
@@ -142,9 +134,12 @@ body{background:#0a0a0a;color:#f1f5f9}
   <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN PANEL WITH LOGOUT -->
 <div id="adminScreen" class="hidden">
-  <h2>Admin Panel - Approve & Manage</h2>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h2>Admin Panel - Approve & Manage</h2>
+    <button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="adminLogout()">Logout</button>
+  </div>
   <div id="adminList"></div>
   <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back to Site</button>
 </div>
@@ -214,8 +209,8 @@ const storage = firebase.storage();
 
 // CONFIG - CHANGE THESE
 const ADMIN_PASSWORD = "admin123"; // Change this!
-const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME"; // Get from cloudinary.com
-const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET"; // Create unsigned preset
+const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
+const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET";
 const PAYFAST_MERCHANT_ID = "YOUR_MERCHANT_ID";
 const PAYFAST_MERCHANT_KEY = "YOUR_MERCHANT_KEY";
 
@@ -245,20 +240,29 @@ function showAdmin(){
   } else {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('adminScreen').classList.remove('hidden');
+    loadAdmin();
   }
 }
 
+// FIXED LOGIN - FORCE SCREEN SWITCH
 function adminLogin(){
   let pass = document.getElementById('adminPass').value;
   if(pass === ADMIN_PASSWORD){
     isAdmin = true;
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('adminScreen').classList.remove('hidden');
-    document.getElementById('adminPass').value = ''; // clear password field
-    loadAdmin(); // refresh pending listings
+    document.getElementById('browseScreen').classList.add('hidden');
+    document.getElementById('adminPass').value = '';
+    loadAdmin();
   } else {
     alert('Wrong password');
   }
+}
+
+function adminLogout(){
+  isAdmin = false;
+  document.getElementById('adminScreen').classList.add('hidden');
+  showBrowse();
 }
 
 function showBrowse(){
@@ -328,13 +332,14 @@ function loadAdmin(){
         <div class="card-info">${item.desc}<br>Seller: ${item.sellerName} | ${item.whatsapp}</div>
         <div class="admin-actions">
           <button class="btn btn-green" onclick="approveListing('${item.id}')">Approve</button>
+          <button class="btn btn-yellow" onclick="markFeatured('${item.id}')">Featured</button>
+          <button class="btn btn-cyan" onclick="markSold('${item.id}')">Mark Sold</button>
           <button class="btn btn-red" onclick="deleteListing('${item.id}')">Delete</button>
-          <button class="btn btn-yellow" onclick="markFeatured('${item.id}')">Make Featured</button>
         </div>
       </div>
     </div>`;
   });
-  document.getElementById('adminList').innerHTML = html || '<div style="color:#6b7280">No pending listings</div>';
+  document.getElementById('adminList').innerHTML = html || '<div style="color:#6b7280;text-align:center;padding:40px">No pending listings</div>';
 }
 
 async function approveListing(id){
@@ -349,8 +354,13 @@ async function deleteListing(id){
 }
 
 async function markFeatured(id){
-  await db.collection('spareshub_listings').doc(id).update({featured:true});
+  await db.collection('spareshub_listings').doc(id).update({featured:true, featuredExpiry: new Date(Date.now() + 7*24*60*60*1000).toISOString()});
   alert('Featured for 7 days!');
+}
+
+async function markSold(id){
+  await db.collection('spareshub_listings').doc(id).update({status:'sold'});
+  alert('Marked as SOLD!');
 }
 
 function contactSeller(whatsapp, item, listingId){
@@ -379,29 +389,24 @@ function closeModal(e){
   if(!e || e.target.id === 'sellModal') document.getElementById('sellModal').classList.remove('active');
 }
 
-// CLOUDINARY UPLOAD - NO STORAGE COST
 async function uploadToCloudinary(file){
   let formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', CLOUDINARY_UPLOAD);
-
   let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
     method: 'POST',
     body: formData
   });
   let data = await res.json();
-  return data.secure_url; // Auto resized + CDN
+  return data.secure_url;
 }
 
-// PAYFAST INTEGRATION
 function payForFeatured(){
   let itemName = document.getElementById('itemMake').value || 'Featured Listing';
   let itemId = Date.now();
-
   let form = document.createElement('form');
   form.method = 'POST';
-  form.action = 'https://sandbox.payfast.co.za/eng/process'; // Change to payfast.co.za for live
-
+  form.action = 'https://sandbox.payfast.co.za/eng/process';
   let fields = {
     merchant_id: PAYFAST_MERCHANT_ID,
     merchant_key: PAYFAST_MERCHANT_KEY,
@@ -414,7 +419,6 @@ function payForFeatured(){
     amount: '50.00',
     item_name: 'Featured Listing 7 Days - ' + itemName
   };
-
   for(let key in fields){
     let input = document.createElement('input');
     input.type = 'hidden';
@@ -422,11 +426,8 @@ function payForFeatured(){
     input.value = fields[key];
     form.appendChild(input);
   }
-
   document.body.appendChild(form);
   form.submit();
-
-  // After payment, user returns and we call submitListing(true)
   localStorage.setItem('pendingFeatured', 'true');
 }
 
@@ -445,7 +446,7 @@ async function submitListing(isFeatured){
 
   let photos = [];
   for(let i=0; i<files.length; i++){
-    let url = await uploadToCloudinary(files[i]); // Cloudinary = free + fast
+    let url = await uploadToCloudinary(files[i]);
     photos.push(url);
   }
 
@@ -459,7 +460,7 @@ async function submitListing(isFeatured){
     price,
     condition,
     photos,
-    status: 'pending', // Admin must approve first
+    status: 'pending',
     featured: isFeatured || localStorage.getItem('pendingFeatured')==='true',
     date: new Date().toISOString(),
     featuredExpiry: isFeatured? new Date(Date.now() + 7*24*60*60*1000).toISOString() : null
@@ -475,7 +476,6 @@ async function updateStats(){
   document.getElementById('statListings').textContent = allListings.filter(i=>i.status==='active').length;
   document.getElementById('statTyres').textContent = allListings.filter(i=>['tyres','rims'].includes(i.category) && i.status==='active').length;
   document.getElementById('statParts').textContent = allListings.filter(i=>!['tyres','rims','workshop'].includes(i.category) && i.status==='active').length;
-
   let today = new Date().toDateString();
   let leadsSnap = await db.collection('spareshub_leads').where('date','==',today).get();
   document.getElementById('statLeads').textContent = leadsSnap.size;
@@ -483,7 +483,6 @@ async function updateStats(){
 
 document.getElementById('searchInput').addEventListener('input', filterListings);
 
-// Auto-remove expired featured listings
 setInterval(()=>{
   allListings.forEach(item=>{
     if(item.featured && item.featuredExpiry && new Date(item.featuredExpiry) < new Date()){
