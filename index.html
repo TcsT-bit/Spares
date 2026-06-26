@@ -311,7 +311,23 @@ function closeModal(e){if(!e||e.target.id==='sellModal'){stopQRScanner();documen
 function runAIQuote(){document.getElementById('jobDesc').value='brake pads';aiEstimate();openSellModal();}
 
 // v11.0 Voice Remote DVI functions already exist above
-
+function createJobCard(){
+  if(!ROLE_PERMS[CURRENT_ROLE].create)return showNotification('No permission','err');
+  let id='job_'+Date.now();
+  let newJob={
+    id,
+    make: currentVINData?.make || document.getElementById('vehicleMake').value || 'Car',
+    customer: document.getElementById('custName').value || 'Walk-in',
+    total: parseFloat(document.getElementById('partsPrice').value||0) + parseFloat(document.getElementById('labourPrice').value||0),
+    status: 'quote'
+  };
+  allJobs.push(newJob);
+  localStorage.setItem('jobs',JSON.stringify(allJobs));
+  closeModal();
+  renderKanban();
+  updateStats();
+  showNotification('JOB CREATED ✓');
+}
 // INIT
 loadJobs();
 loadInventory();
