@@ -246,7 +246,15 @@ input:read-only{background:#1f2937;color:#6b7280}
 
 <script>
 const { jsPDF } = window.jspdf;
-const firebaseConfig = {apiKey:"YOUR_API_KEY"};
+const firebaseConfig = {
+    apiKey: "AIzaSyDU3m6DUDpXugBs-PW4Aqn_WvbbHbGq6mg",
+    authDomain: "omega---dms.firebaseapp.com",
+    projectId: "omega---dms",
+    storageBucket: "omega---dms.firebasestorage.app",
+    messagingSenderId: "194803652821",
+    appId: "1:194803652821:web:fe9dc965c864a6fe1a2a5c",
+    measurementId: "G-3C6DQ3NLCX"
+  };
 let db, DEMO_MODE = false, CURRENT_ROLE = 'viewer';
 try{if(firebaseConfig.apiKey === "YOUR_API_KEY") throw "Demo";firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){DEMO_MODE=true;document.getElementById('demoMode').classList.remove('hidden');}
 
