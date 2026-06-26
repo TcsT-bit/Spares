@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SparesHub OMEGA v5.3 QR VIN</title>
+<title>SparesHub OMEGA v5.4 FIXED</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -27,7 +27,7 @@ body{background:var(--bg);color:#f1f5f9}
 .badge-paid{background:#16a34a;color:#fff}
 .btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px;font-size:14px}
 .btn-purple{background:var(--purple);color:white}.btn-green{background:var(--green);color:white}
-.btn-cyan{background:#06b6d4;color:white}.btn-red{background:var(--red);color:white}
+.btn-cyan{background:#06b6d4;color:white}.btn-red{background:var(--red);color:white}.btn-orange{background:#ea580c;color:white}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
 .modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:800px;width:90%;max-height:90vh;overflow-y:auto}
@@ -42,20 +42,23 @@ input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px soli
 .dvi-box img{width:100%;border-radius:6px}
 .notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px;border-radius:12px;z-index:9999;display:none;max-width:300px}
 .hidden{display:none!important}.loading{color:#60a5fa;font-size:12px}
-#qrReader{width:100%;max-width:400px;margin:10px auto;border-radius:12px;overflow:hidden}
+#qrReader{width:100%;max-width:400px;margin:10px auto;border-radius:12px;overflow:hidden;background:#000}
 #qrReader video{width:100%!important}
-.scanner-box{background:#000;border-radius:12px;padding:10px;margin:10px 0}
+.scanner-box{background:#000;border-radius:12px;padding:10px;margin:10px 0;border:1px solid #374151}
+.error-text{color:#f87171;font-size:12px;margin-top:-8px;margin-bottom:8px}
+.demo-badge{position:fixed;bottom:10px;right:10px;background:#f59e0b;color:#000;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800}
 @media(max-width:900px){.kanban{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>⚡ SparesHub v5.3 QR VIN</h1>
+  <h1>⚡ SparesHub v5.4 FIXED</h1>
   <div><button class="icon-btn" onclick="toggleTheme()">🌓</button><button class="icon-btn" onclick="exportData()">📊</button><button class="icon-btn" onclick="showAdmin()">👤</button></div>
 </div>
 
 <div class="notification" id="notification"></div>
+<div id="demoMode" class="demo-badge hidden">DEMO MODE</div>
 
 <div class="container">
 <div id="adminScreen" class="hidden">
@@ -82,20 +85,20 @@ input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px soli
 </div>
 </div>
 
-<!-- SELL/JOB MODAL WITH QR -->
 <div id="sellModal" class="modal" onclick="closeModal(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
     <h2>NEW JOB - SCAN VIN</h2>
-    
+
     <div class="scanner-box">
       <div class="row">
         <button class="btn btn-cyan" onclick="startQRScanner()">📱 Scan VIN Barcode</button>
-        <button class="btn btn-red hidden" id="stopBtn" onclick="stopQRScanner()">Stop Camera</button>
+        <button class="btn btn-orange" onclick="fillTestVIN()">🧪 Test VIN</button>
       </div>
       <div id="qrReader" class="hidden"></div>
+      <div id="stopBtnWrap" class="hidden"><button class="btn btn-red" onclick="stopQRScanner()">Stop Camera</button></div>
     </div>
 
-    <div style="text-align:center;color:#6b7280;margin:10px 0">OR</div>
+    <div style="text-align:center;color:#6b7280;margin:10px 0">OR TYPE</div>
 
     <div class="row">
       <input id="vinInput" placeholder="17-Digit VIN" maxlength="17">
@@ -103,9 +106,10 @@ input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px soli
     </div>
     <div id="vinLoading" class="loading hidden">Decoding from NHTSA...</div>
     <div id="vinResult" class="vin-info hidden"></div>
-    
-    <input id="custName" placeholder="Customer Name"><div id="errCust" style="color:#f87171;font-size:12px"></div>
-    <input id="custWA" placeholder="WhatsApp +27"><div id="errWA" style="color:#f87171;font-size:12px"></div>
+    <div id="vinError" class="error-text"></div>
+
+    <input id="custName" placeholder="Customer Name"><div id="errCust" class="error-text"></div>
+    <input id="custWA" placeholder="WhatsApp +27"><div id="errWA" class="error-text"></div>
     <input id="vehicleMake" placeholder="Auto-filled" readonly>
     <input id="vehiclePCD" placeholder="PCD" readonly>
     <textarea id="jobDesc" placeholder="Job Description"></textarea>
@@ -117,14 +121,34 @@ input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px soli
 
 <script>
 const { jsPDF } = window.jspdf;
+
+// FIREBASE CONFIG - LEAVE AS PLACEHOLDER TO USE DEMO MODE
 const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR.firebaseapp.com",projectId:"YOUR_ID",storageBucket:"YOUR.appspot.com",messagingSenderId:"XXX",appId:"YOUR_APP"};
-let db; try{firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){db=null;}
+let db, DEMO_MODE = false;
+
+try{
+  if(firebaseConfig.apiKey === "YOUR_API_KEY") throw "Demo";
+  firebase.initializeApp(firebaseConfig);
+  db=firebase.firestore();
+  console.log("Firebase Connected");
+}catch(e){
+  DEMO_MODE = true;
+  document.getElementById('demoMode').classList.remove('hidden');
+  console.log("DEMO MODE: No Firebase");
+}
 
 let allJobs=[],currentVINData=null,currentDVI={},isAdmin=false,qrScanner=null;
 
 const PCD_DB = {'Toyota Hilux': '6x139.7', 'Toyota Fortuner': '6x139.7', 'Toyota Corolla': '5x100', 'Ford Ranger': '6x139.7', 'Ford Everest': '6x139.7', 'VW Polo': '5x100', 'VW Golf': '5x112', 'Nissan Navara': '6x114.3', 'BMW 3 Series': '5x120', 'Mercedes C-Class': '5x112'};
 
-function showNotification(msg){let n=document.getElementById('notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
+// DEMO VIN DATA - WORKS OFFLINE
+const DEMO_VINS = {
+  '1FTFW1E5XKF': {Make:'Ford', Model:'Ranger', ModelYear:'2019', EngineCylinders:'4', BodyClass:'Pickup'},
+  'JTFHX22P5J0': {Make:'Toyota', Model:'Hilux', ModelYear:'2018', EngineCylinders:'4', BodyClass:'Pickup'},
+  'WVWZZZ6RZHY': {Make:'Volkswagen', Model:'Polo', ModelYear:'2017', EngineCylinders:'3', BodyClass:'Hatchback'}
+};
+
+function showNotification(msg,type='ok'){let n=document.getElementById('notification');n.textContent=msg;n.style.background=type==='err'?'var(--red)':'var(--green)';n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
 function toggleTheme(){let t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
 if(localStorage.getItem('theme'))document.documentElement.setAttribute('data-theme',localStorage.getItem('theme'));
 
@@ -134,48 +158,74 @@ function showBrowse(){document.getElementById('browseScreen').classList.remove('
 function adminLogin(){let e=document.getElementById('adminEmail').value,p=document.getElementById('adminPass').value;if(e==='admin@test.com'&&p==='admin123'){isAdmin=true;showBrowse();showNotification('Admin In');}else{alert('admin@test.com / admin123');}}
 function exportData(){renderReports();showNotification('Data ready');}
 
-// QR SCANNER - TIER 0 FEATURE
+// TEST VIN BUTTON - FOR DESKTOP TESTING
+function fillTestVIN(){
+  document.getElementById('vinInput').value = '1FTFW1E5XKF123456';
+  decodeVIN();
+}
+
+// QR SCANNER - FIXED FOR MOBILE
 function startQRScanner(){
+  if(location.protocol!== 'https:' && location.hostname!== 'localhost'){
+    return showNotification('Camera needs HTTPS or localhost','err');
+  }
+
   document.getElementById('qrReader').classList.remove('hidden');
-  document.getElementById('stopBtn').classList.remove('hidden');
-  
-  qrScanner = new Html5Qrcode("qrReader");
-  qrScanner.start(
-    { facingMode: "environment" }, // back camera
-    { fps: 10, qrbox: 250 },
-    (decodedText) => {
-      // VIN found
-      document.getElementById('vinInput').value = decodedText.trim();
+  document.getElementById('stopBtnWrap').classList.remove('hidden');
+
+  // FIX: Delay start so modal is fully rendered
+  setTimeout(()=>{
+    qrScanner = new Html5Qrcode("qrReader");
+    qrScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: {width: 250, height: 250} },
+      (decodedText) => {
+        let vin = decodedText.trim().toUpperCase().substring(0,17);
+        document.getElementById('vinInput').value = vin;
+        stopQRScanner();
+        decodeVIN();
+        showNotification('VIN Scanned: '+vin);
+      },
+      (error) => {}
+    ).catch(err => {
+      console.log(err);
+      showNotification('Camera failed: '+err,'err');
       stopQRScanner();
-      decodeVIN();
-      showNotification('VIN Scanned: '+decodedText);
-    },
-    (error) => {}
-  ).catch(err => {
-    showNotification('Camera access denied');
-  });
+    });
+  },300);
 }
 
 function stopQRScanner(){
   if(qrScanner){
-    qrScanner.stop().then(()=>{qrScanner.clear();});
+    qrScanner.stop().then(()=>{qrScanner.clear();}).catch(e=>{});
   }
   document.getElementById('qrReader').classList.add('hidden');
-  document.getElementById('stopBtn').classList.add('hidden');
+  document.getElementById('stopBtnWrap').classList.add('hidden');
 }
 
-// LIVE VIN DECODE - NHTSA
+// LIVE VIN DECODE - FIXED WITH DEMO FALLBACK
 async function decodeVIN(){
+  document.getElementById('vinError').textContent = '';
   let vin = document.getElementById('vinInput').value.trim().toUpperCase();
-  if(vin.length!== 17) return alert('Enter 17 digit VIN');
+  if(vin.length!== 17) return document.getElementById('vinError').textContent = 'Enter 17 digit VIN';
 
   document.getElementById('vinLoading').classList.remove('hidden');
   document.getElementById('vinResult').classList.add('hidden');
 
   try {
-    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${vin}?format=json`);
-    const data = await res.json();
-    const v = data.Results[0];
+    let v;
+    if(DEMO_MODE ||!navigator.onLine){
+      // OFFLINE/DEMO MODE
+      let prefix = vin.substring(0,9);
+      v = DEMO_VINS[prefix] || {Make:'Unknown', Model:'Vehicle', ModelYear:'N/A', EngineCylinders:'N/A', BodyClass:'N/A'};
+      showNotification('DEMO VIN Used');
+    } else {
+      // LIVE NHTSA API
+      const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${vin}?format=json`);
+      if(!res.ok) throw "API Down";
+      const data = await res.json();
+      v = data.Results[0];
+    }
 
     let make = v.Make || 'Unknown';
     let model = v.Model || '';
@@ -194,13 +244,16 @@ async function decodeVIN(){
     showNotification('VIN Decoded ✓');
 
   } catch(e) {
-    showNotification('VIN API Failed');
+    console.log(e);
+    document.getElementById('vinError').textContent = 'VIN API Failed. Use Test VIN button.';
+    showNotification('API Failed - Use Test VIN','err');
   }
   document.getElementById('vinLoading').classList.add('hidden');
 }
 
+// CREATE JOB CARD - FIXED WITH LOCALSTORAGE BACKUP
 async function createJobCard(){
-  document.querySelectorAll('[id^=err]').forEach(x=>x.textContent='');
+  document.querySelectorAll('.error-text').forEach(x=>x.textContent='');
   let n=document.getElementById('custName').value.trim();
   let w=document.getElementById('custWA').value.trim();
   let m=document.getElementById('vehicleMake').value;
@@ -208,22 +261,58 @@ async function createJobCard(){
   let parts=parseFloat(document.getElementById('partsPrice').value)||0;
   let labour=parseFloat(document.getElementById('labourPrice').value)||0;
   let total=(parts+labour)*1.15;
-  let hasError=false; if(!n){document.getElementById('errCust').textContent='Name required';hasError=true;}
+
+  let hasError=false;
+  if(!n){document.getElementById('errCust').textContent='Name required';hasError=true;}
   if(!w||w.length<9){document.getElementById('errWA').textContent='+27 number';hasError=true;}
+  if(!m){document.getElementById('vinError').textContent='Decode VIN first';hasError=true;}
   if(hasError) return;
 
-  let jobData = {customer:n,whatsapp:w,make:m||'Unknown',desc:d,parts,labour,total,status:'quote',vin:currentVINData,date:new Date().toISOString()};
-  if(db){await db.collection('spareshub_jobs').add(jobData);} else {jobData.id='demo_'+Date.now();allJobs.push(jobData);}
-  if(w.startsWith('+27')) sendWhatsApp(w, `Hi ${n}, Quote: ${m} - R${total.toFixed(2)}. Reply APPROVE.`);
-  showNotification('Job Created ✓');closeModal();loadJobs();
+  let jobData = {customer:n,whatsapp:w,make:m||'Unknown',desc:d,parts,labour,total,status:'quote',vin:currentVINData,date:new Date().toISOString(),id:'job_'+Date.now()};
+
+  try{
+    if(db &&!DEMO_MODE){
+      await db.collection('spareshub_jobs').add(jobData);
+    } else {
+      // LOCALSTORAGE BACKUP - ALWAYS WORKS
+      allJobs.push(jobData);
+      localStorage.setItem('spareshub_jobs', JSON.stringify(allJobs));
+    }
+    if(w.startsWith('+27')) sendWhatsApp(w, `Hi ${n}, Quote: ${m} - R${total.toFixed(2)}. Reply APPROVE.`);
+    showNotification('Job Card Created ✓');
+    closeModal();
+    loadJobs();
+  }catch(e){
+    console.log(e);
+    showNotification('Save Failed: '+e.message,'err');
+  }
 }
 
-function loadJobs(){if(db){db.collection('spareshub_jobs').onSnapshot(snap=>{allJobs=snap.docs.map(d=>({id:d.id,...d.data()}));renderKanban();renderMarketplace();});}else{renderKanban();renderMarketplace();}}
+function loadJobs(){
+  if(db &&!DEMO_MODE){
+    db.collection('spareshub_jobs').onSnapshot(snap=>{
+      allJobs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderKanban();renderMarketplace();
+    },err=>{
+      console.log("Firebase error, using localStorage",err);
+      allJobs = JSON.parse(localStorage.getItem('spareshub_jobs')||'[]');
+      renderKanban();renderMarketplace();
+    });
+  }else{
+    allJobs = JSON.parse(localStorage.getItem('spareshub_jobs')||'[]');
+    renderKanban();renderMarketplace();
+  }
+}
 loadJobs();
 
 function renderKanban(){['quote','work','wait','ready','paid'].forEach(s=>{let col=document.getElementById('col-'+s);if(!col)return;let jobs=allJobs.filter(j=>j.status===s);col.innerHTML=jobs.map(j=>`<div class="job-card"><span class="badge badge-${s}">${s.toUpperCase()}</span><br><b>${j.make}</b><br>${j.customer}<br>R${j.total?.toFixed(2)}<br><button class="btn btn-cyan" style="padding:6px;font-size:12px" onclick="moveJob('${j.id}','${nextStatus(s)}')">→ ${nextStatus(s).toUpperCase()}</button></div>`).join('')||'<div style="color:#6b7280;text-align:center;padding:20px;font-size:12px">No jobs</div>';});}
 function nextStatus(s){return {quote:'work',work:'wait',wait:'ready',ready:'paid'}[s]||'paid';}
-async function moveJob(id,status){if(db){await db.collection('spareshub_jobs').doc(id).update({status});}else{let j=allJobs.find(x=>x.id===id);if(j)j.status=status;}showNotification('Moved');renderKanban();}
+async function moveJob(id,status){
+  let j=allJobs.find(x=>x.id===id);if(j)j.status=status;
+  if(db &&!DEMO_MODE){await db.collection('spareshub_jobs').doc(id).update({status});}
+  localStorage.setItem('spareshub_jobs', JSON.stringify(allJobs));
+  showNotification('Moved');renderKanban();
+}
 
 function startDVI(){let vin=document.getElementById('dviVin').value.trim();if(!vin)return alert('Enter VIN');let job=allJobs[0];if(!job)return alert('Create job first');currentDVI={jobId:job.id,photos:{}};document.getElementById('dviCarTitle').textContent=job.make+' - '+job.customer;document.getElementById('dviArea').classList.remove('hidden');}
 function uploadDVI(el,side){let input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=e=>{let url=URL.createObjectURL(e.target.files[0]);el.innerHTML=`<img src="${url}"><br>${side}`;currentDVI.photos=url;};input.click();}
@@ -236,7 +325,7 @@ function exportCSV(){let csv='Customer,Vehicle,Total,Status,Date\n';allJobs.forE
 
 function sendWhatsApp(num,msg){let clean=num.replace(/\D/g,'');if(clean.startsWith('0'))clean='27'+clean.substring(1);window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`,'_blank');}
 function openSellModal(){document.getElementById('sellModal').classList.add('active');}
-function closeModal(e){if(!e||e.target.id==='sellModal'){stopQRScanner();document.getElementById('sellModal').classList.remove('active');document.querySelectorAll('[id^=err]').forEach(x=>x.textContent='');currentVINData=null;}}
+function closeModal(e){if(!e||e.target.id==='sellModal'){stopQRScanner();document.getElementById('sellModal').classList.remove('active');document.querySelectorAll('.error-text').forEach(x=>x.textContent='');currentVINData=null;}}
 function renderMarketplace(){document.getElementById('listingsGrid').innerHTML=allJobs.length?allJobs.map(j=>`<div class="card"><span class="badge badge-${j.status}">${j.status.toUpperCase()}</span><b>${j.make}</b><br>${j.customer}<br>R${j.total?.toFixed(2)}<button class="btn btn-purple" onclick="openQuote('${j.id}')">📄 Quote</button></div>`).join(''):'<div style="color:#6b7280;text-align:center;padding:40px">No jobs. Click + NEW JOB</div>';}
 function openQuote(id){let j=allJobs.find(x=>x.id===id);const doc=new jsPDF();doc.setFontSize(18);doc.text('SparesHub INVOICE',20,20);doc.setFontSize(12);doc.text(`Customer: ${j.customer}`,20,35);doc.text(`Vehicle: ${j.make}`,20,45);doc.text(`Total: R${(j.total||0).toFixed(2)}`,20,65);doc.save(`Invoice-${j.customer.replace(/\s/g,'')}.pdf`);}
 </script>
