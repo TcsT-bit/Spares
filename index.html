@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#dc2626">
-<title>SparesHub OMEGA ULTRA v9.0 J2534</title>
+<title>SparesHub OMEGA ULTRA v9.1 GOD MODE</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -39,7 +39,6 @@ body{background:var(--bg);color:#f1f5f9}
 .modal.active{display:flex}
 .modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:900px;width:90%;max-height:90vh;overflow-y:auto}
 input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px}
-input:read-only{background:#1f2937;color:#6b7280}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto}
@@ -51,23 +50,20 @@ input:read-only{background:#1f2937;color:#6b7280}
 .obd-gauge{background:#0f172a;border-radius:12px;padding:16px;text-align:center;border:2px solid #1f2937}
 .obd-value{font-size:42px;font-weight:800;color:#60a5fa}
 .dtc-card{background:#1f2937;border-left:4px solid var(--red);padding:12px;border-radius:8px;margin-bottom:8px}
-.module-box{width:120px;height:80px;background:#1f2937;border:2px solid var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;cursor:pointer}
-.module-box.fault{border-color:var(--red);background:rgba(220,38,38,0.2)}
-.module-grid{display:flex;flex-wrap:wrap;gap:10px}
-.live-chart{max-height:200px}
 .table{width:100%;font-size:12px;border-collapse:collapse}
 .table th,.table td{padding:8px;text-align:left;border-bottom:1px solid #1f2937}
 .perm-note{font-size:11px;color:#fbbf24;margin-top:4px}
 .progress-bar{height:20px;background:#1f2937;border-radius:10px;overflow:hidden;margin:10px 0}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));width:0%;transition:width 0.3s}
 .log-box{background:#0a0a0a;border:1px solid #374151;border-radius:8px;padding:10px;height:200px;overflow-y:auto;font-family:monospace;font-size:11px}
+.kiosk-btn{height:120px;font-size:18px}
 @media(max-width:900px){.kanban{grid-template-columns:1fr}.row,.row-3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>⚡ OMEGA ULTRA v9.0 J2534 <span class="role-badge" id="roleBadge">VIEWER</span></h1>
+  <h1>⚡ OMEGA ULTRA v9.1 <span class="role-badge" id="roleBadge">VIEWER</span></h1>
   <div><button class="icon-btn" onclick="logout()">🚪</button></div>
 </div>
 
@@ -80,8 +76,9 @@ input:read-only{background:#1f2937;color:#6b7280}
     <h2>OMEGA DMS + DIAG + J2534</h2>
     <select id="loginRole">
       <option value="admin">👑 Admin - Full J2534 Access</option>
-      <option value="tech">🔧 Technician - Diag + ADAS</option>
-      <option value="manager">📊 Manager - Reports Only</option>
+      <option value="manager">📊 Manager - Profit + Reports</option>
+      <option value="tech">🔧 Technician - Diag + ADAS + Keys</option>
+      <option value="reception">💬 Reception - Front Desk + Kiosk</option>
     </select>
     <input id="loginEmail" placeholder="Email"><input id="loginPass" type="password" placeholder="Pass: 123">
     <button class="btn btn-red" onclick="login()">Login</button>
@@ -104,6 +101,7 @@ input:read-only{background:#1f2937;color:#6b7280}
     <div class="tab" data-tab="keys" onclick="showTab('keys',event)">Key Program</div>
     <div class="tab" data-tab="jobcards" onclick="showTab('jobcards',event)">Job Cards</div>
     <div class="tab" data-tab="inventory" onclick="showTab('inventory',event)">Inventory</div>
+    <div class="tab" data-tab="kiosk" onclick="showTab('kiosk',event)">Kiosk</div>
     <div class="tab" data-tab="reports" onclick="showTab('reports',event)">Reports</div>
   </div>
 
@@ -133,46 +131,40 @@ input:read-only{background:#1f2937;color:#6b7280}
     <div id="dtcResult"></div>
   </div>
 
-  <!-- J2534 PASS-THRU -->
   <div id="tab-j2534" class="hidden">
-    <h3>J2534 Pass-Thru Programming - Bosch Style</h3>
-    <div class="perm-note">Admin Only: ECU Flash, Module Coding, Parameter Reset</div>
+    <h3>J2534 Pass-Thru Programming</h3>
+    <div class="perm-note">Admin Only: ECU Flash, Module Coding</div>
     <div class="row">
-      <select id="j2534Module"><option>ECM - Engine</option><option>TCM - Transmission</option><option>BCM - Body</option><option>ABS - Brakes</option></select>
-      <select id="j2534Action"><option>Read ECU ID</option><option>Code Module</option><option>Flash Firmware</option><option>Reset Adaptations</option></select>
+      <select id="j2534Module"><option>ECM - Engine</option><option>TCM - Transmission</option><option>BCM - Body</option></select>
+      <select id="j2534Action"><option>Read ECU ID</option><option>Code Module</option><option>Flash Firmware</option></select>
     </div>
-    <input id="j2534File" type="file" accept=".bin,.odx,.sgo">
     <div class="progress-bar"><div class="progress-fill" id="flashProgress"></div></div>
-    <button class="btn btn-red" id="btnFlash" onclick="startJ2534()">Start Programming</button>
+    <button class="btn btn-red" onclick="startJ2534()">Start Programming</button>
     <div class="log-box" id="j2534Log"></div>
   </div>
 
-  <!-- ADAS CALIBRATION -->
   <div id="tab-adas" class="hidden">
-    <h3>ADAS Calibration - Autel Style</h3>
-    <div class="perm-note">Requires: Calibration frame + Targets</div>
+    <h3>ADAS Calibration</h3>
     <div class="row">
-      <select id="adasType"><option>Front Camera</option><option>Radar ACC</option><option>Blind Spot</option><option>Lane Keep</option></select>
+      <select id="adasType"><option>Front Camera</option><option>Radar ACC</option><option>Lane Keep</option></select>
       <select id="adasMode"><option>Static Calibration</option><option>Dynamic Calibration</option></select>
     </div>
     <div class="row-3">
-      <button class="btn btn-cyan" onclick="startADAS('prep')">1. Prep Vehicle</button>
-      <button class="btn btn-orange" onclick="startADAS('cal')">2. Calibrate</button>
-      <button class="btn btn-green" onclick="startADAS('cert')">3. Certificate PDF</button>
+      <button class="btn btn-cyan" onclick="startADAS('prep')">1. Prep</button>
+      <button class="btn btn-orange" onclick="startADAS('cal')">2. Cal</button>
+      <button class="btn btn-green" onclick="startADAS('cert')">3. PDF Cert</button>
     </div>
-    <div id="adasStatus" class="card" style="margin-top:12px">Status: Idle</div>
+    <div id="adasStatus" class="card">Status: Idle</div>
   </div>
 
-  <!-- KEY PROGRAMMING -->
   <div id="tab-keys" class="hidden">
-    <h3>Key Programming - Immobilizer</h3>
-    <div class="perm-note">Admin/Tech Only: PIN required</div>
+    <h3>Key Programming</h3>
     <div class="row">
       <input id="keyPIN" placeholder="4-Digit PIN">
-      <select id="keyAction"><option>Add Key</option><option>Delete Key</option><option>Program Remote</option></select>
+      <select id="keyAction"><option>Add Key</option><option>Delete Key</option></select>
     </div>
     <button class="btn btn-red" onclick="programKey()">Start Key Programming</button>
-    <div id="keyStatus" class="card" style="margin-top:12px">Keys Stored: 2/4</div>
+    <div id="keyStatus" class="card">Keys Stored: 2/4</div>
   </div>
 
   <div id="tab-jobcards" class="hidden"><div class="kanban"><div class="kanban-col"><div style="font-weight:800;text-align:center">📝 QUOTE</div><div id="col-quote"></div></div><div class="kanban-col"><div style="font-weight:800;text-align:center">🔧 IN WORK</div><div id="col-work"></div></div><div class="kanban-col"><div style="font-weight:800;text-align:center">⏳ WAITING</div><div id="col-wait"></div></div><div class="kanban-col"><div style="font-weight:800;text-align:center">✅ READY</div><div id="col-ready"></div></div><div class="kanban-col"><div style="font-weight:800;text-align:center">💰 PAID</div><div id="col-paid"></div></div></div></div>
@@ -180,6 +172,15 @@ input:read-only{background:#1f2937;color:#6b7280}
   <div id="tab-inventory" class="hidden">
     <div class="row"><button class="btn btn-cyan" onclick="scanBarcode()">📱 Scan</button><button class="btn btn-green" onclick="addStock()">+ Add Part</button></div>
     <div id="inventoryTable"></div>
+  </div>
+
+  <div id="tab-kiosk" class="hidden">
+    <h3>Customer Kiosk - Reception Only</h3>
+    <div class="row-3">
+      <button class="btn btn-purple kiosk-btn" onclick="kioskCheckIn()">1. Check In</button>
+      <button class="btn btn-cyan kiosk-btn" onclick="showTab('jobcards',event)">2. View Job</button>
+      <button class="btn btn-green kiosk-btn" onclick="kioskSign()">3. E-Sign</button>
+    </div>
   </div>
 
   <div id="tab-reports" class="hidden">
@@ -198,12 +199,19 @@ try{if(firebaseConfig.apiKey === "YOUR_API_KEY") throw "Demo";firebase.initializ
 let allJobs=[],allInventory=[],obdDevice=null,obdServer=null,liveData={},chart=null,obdInterval=null,keysProgrammed=0;
 
 const DTC_DB = {'P0301':{desc:'Cylinder 1 Misfire',fix:'Swap coil. 82%',hours:1.2,parts:850},'P0420':{desc:'Cat Efficiency Low',fix:'Replace cat. 91%',hours:2.5,parts:4200}};
-const ROLE_PERMS = {admin:{name:'ADMIN',tabs:['dashboard','diag','dtc','j2534','adas','keys','jobcards','inventory','reports'],j2534:true,adas:true,keys:true},tech:{name:'TECH',tabs:['dashboard','diag','dtc','adas','keys','jobcards','inventory'],j2534:false,adas:true,keys:true},manager:{name:'MANAGER',tabs:['dashboard','dtc','jobcards','inventory','reports'],j2534:false,adas:false,keys:false}};
+
+// FIXED: RECEPTION ADDED BACK
+const ROLE_PERMS = {
+  admin:{name:'ADMIN',color:'var(--gold)',tabs:['dashboard','diag','dtc','j2534','adas','keys','jobcards','inventory','reports'],j2534:true,adas:true,keys:true,create:true},
+  manager:{name:'MANAGER',color:'var(--blue)',tabs:['dashboard','dtc','jobcards','inventory','reports'],j2534:false,adas:false,keys:false,create:true},
+  tech:{name:'TECH',color:'var(--cyan)',tabs:['dashboard','diag','dtc','adas','keys','jobcards','inventory'],j2534:false,adas:true,keys:true,create:false},
+  reception:{name:'RECEPTION',color:'var(--green)',tabs:['dashboard','jobcards','kiosk'],j2534:false,adas:false,keys:false,create:true}
+};
 
 function showNotification(msg,type='ok'){let n=document.getElementById('notification');n.textContent=msg;n.style.background=type==='err'?'var(--red)':'var(--green)';n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
-function login(){let role=document.getElementById('loginRole').value;CURRENT_ROLE=role;let p=ROLE_PERMS[role];document.getElementById('roleBadge').textContent=p.name;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appScreen').classList.remove('hidden');document.querySelectorAll('.tab').forEach(tab=>{tab.classList.toggle('hidden',!p.tabs.includes(tab.dataset.tab));});document.getElementById('btnJ2534').disabled=!p.j2534;document.getElementById('btnADAS').disabled=!p.adas;showTab(p.tabs[0],{target:document.querySelector(`[data-tab="${p.tabs[0]}"]`)});loadJobs();loadInventory();updateStats();}
+function login(){let role=document.getElementById('loginRole').value;CURRENT_ROLE=role;let p=ROLE_PERMS[role];document.getElementById('roleBadge').textContent=p.name;document.getElementById('roleBadge').style.background=p.color;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appScreen').classList.remove('hidden');document.querySelectorAll('.tab').forEach(tab=>{tab.classList.toggle('hidden',!p.tabs.includes(tab.dataset.tab));});document.getElementById('btnJ2534').disabled=!p.j2534;document.getElementById('btnADAS').disabled=!p.adas;showTab(p.tabs[0],{target:document.querySelector(`[data-tab="${p.tabs[0]}"]`)});loadJobs();loadInventory();updateStats();}
 function logout(){stopOBD();document.getElementById('appScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');}
-function showTab(tab,e){if(!ROLE_PERMS[CURRENT_ROLE].tabs.includes(tab))return showNotification('Access Denied','err');document.querySelectorAll('[id^=tab-]').forEach(x=>x.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');if(tab==='diag')initChart();if(tab==='jobcards')renderKanban();if(tab==='inventory')renderInventory();if(tab==='reports')renderReports();}
+function showTab(tab,e){if(!ROLE_PERMS[CURRENT_ROLE].tabs.includes(tab))return showNotification('Access Denied','err');document.querySelectorAll('[id^=tab-]').forEach(x=>x.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(e) e.target.classList.add('active');if(tab==='diag')initChart();if(tab==='jobcards')renderKanban();if(tab==='inventory')renderInventory();if(tab==='reports')renderReports();}
 
 async function connectOBD2(){if(!navigator.bluetooth)return showNotification('Chrome/Android only','err');try{obdDevice=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'OBD'}]});obdServer=await obdDevice.gatt.connect();document.getElementById('connStatus').textContent='Connected: '+obdDevice.name;showNotification('J2534 Ready');startLiveData();}catch(e){showNotification('Failed','err');}}
 function startLiveData(){obdInterval=setInterval(()=>{liveData={rpm:750+Math.floor(Math.random()*200),coolant:88+Math.floor(Math.random()*5),speed:Math.floor(Math.random()*80)};document.getElementById('rpm').textContent=liveData.rpm;document.getElementById('coolant').textContent=liveData.coolant+'°';document.getElementById('speed').textContent=liveData.speed;updateChart();},1000);}
@@ -213,39 +221,20 @@ function updateChart(){if(!chart)return;chart.data.labels.push('');chart.data.da
 
 function lookupDTC(){let code=document.getElementById('dtcInput').value.toUpperCase();let d=DTC_DB[code];if(!d)return document.getElementById('dtcResult').innerHTML='<div class="dtc-card">Not found</div>';document.getElementById('dtcResult').innerHTML=`<div class="dtc-card"><b>${code} - ${d.desc}</b><br>Fix: ${d.fix}<br>Total: R${Math.round(d.hours*350+d.parts)}</div>`;}
 
-// J2534 PASS-THRU SIMULATION
 function logJ2534(msg){document.getElementById('j2534Log').innerHTML+=`[${new Date().toLocaleTimeString()}] ${msg}<br>`;document.getElementById('j2534Log').scrollTop=99999;}
-async function startJ2534(){
-  if(!ROLE_PERMS[CURRENT_ROLE].j2534)return showNotification('Admin only','err');
-  let module=document.getElementById('j2534Module').value;
-  let action=document.getElementById('j2534Action').value;
-  logJ2534(`Connecting to ${module}...`);
-  let progress=0;let int=setInterval(()=>{progress+=10;document.getElementById('flashProgress').style.width=progress+'%';logJ2534(`${action}: ${progress}%`);if(progress>=100){clearInterval(int);logJ2534(`${action} Complete ✓`);showNotification(`${module} ${action} Done`);}},800);
-}
+async function startJ2534(){if(!ROLE_PERMS[CURRENT_ROLE].j2534)return showNotification('Admin only','err');let module=document.getElementById('j2534Module').value;logJ2534(`Connecting to ${module}...`);let progress=0;let int=setInterval(()=>{progress+=10;document.getElementById('flashProgress').style.width=progress+'%';logJ2534(`Flashing: ${progress}%`);if(progress>=100){clearInterval(int);logJ2534(`Complete ✓`);showNotification(`${module} Done`);}},800);}
 
-// ADAS CALIBRATION
-async function startADAS(step){
-  if(!ROLE_PERMS[CURRENT_ROLE].adas)return showNotification('No permission','err');
-  let type=document.getElementById('adasType').value;
-  let mode=document.getElementById('adasMode').value;
-  if(step==='prep'){document.getElementById('adasStatus').innerHTML='Status: Vehicle leveled. Targets placed 3m ahead.';showNotification('Prep Complete');}
-  if(step==='cal'){document.getElementById('adasStatus').innerHTML=`Status: Calibrating ${type} - ${mode}...`;showNotification('Calibrating...');setTimeout(()=>{document.getElementById('adasStatus').innerHTML='Status: Calibration Successful ✓';showNotification('ADAS Cal Complete');},3000);}
-  if(step==='cert'){const doc=new jsPDF();doc.text('ADAS Calibration Certificate',20,20);doc.text(`Vehicle: ${new Date().toLocaleDateString()}`,20,30);doc.text(`System: ${type}`,20,40);doc.text(`Result: PASSED`,20,50);doc.save('ADAS_Cert.pdf');showNotification('PDF Downloaded');}
-}
+async function startADAS(step){if(!ROLE_PERMS[CURRENT_ROLE].adas)return showNotification('No permission','err');let type=document.getElementById('adasType').value;if(step==='prep'){document.getElementById('adasStatus').innerHTML='Status: Vehicle leveled. Targets placed.';showNotification('Prep Complete');}if(step==='cal'){document.getElementById('adasStatus').innerHTML=`Status: Calibrating ${type}...`;setTimeout(()=>{document.getElementById('adasStatus').innerHTML='Status: Success ✓';showNotification('ADAS Complete');},3000);}if(step==='cert'){const doc=new jsPDF();doc.text('ADAS Certificate',20,20);doc.text(`System: ${type}`,20,30);doc.text('Result: PASSED',20,40);doc.save('ADAS_Cert.pdf');}}
 
-// KEY PROGRAMMING
-function programKey(){
-  if(!ROLE_PERMS[CURRENT_ROLE].keys)return showNotification('No permission','err');
-  let pin=document.getElementById('keyPIN').value;
-  if(pin.length!==4)return showNotification('Enter 4-digit PIN','err');
-  showNotification('Insert new key. Turn ignition ON...');
-  setTimeout(()=>{keysProgrammed++;document.getElementById('keyStatus').textContent=`Keys Stored: ${keysProgrammed}/4`;showNotification('Key Programmed ✓');updateStats();},2000);
-}
+function programKey(){if(!ROLE_PERMS[CURRENT_ROLE].keys)return showNotification('No permission','err');let pin=document.getElementById('keyPIN').value;if(pin.length!==4)return showNotification('Enter 4-digit PIN','err');showNotification('Insert key. Turn ignition ON...');setTimeout(()=>{keysProgrammed++;document.getElementById('keyStatus').textContent=`Keys Stored: ${keysProgrammed}/4`;showNotification('Key Programmed ✓');updateStats();},2000);}
 
 function loadInventory(){allInventory=JSON.parse(localStorage.getItem('inv')||'[{"sku":"BRK001","name":"Pads","qty":3,"min":5,"price":850}]');renderInventory();}
 function renderInventory(){document.getElementById('inventoryTable').innerHTML=`<table class="table"><tr><th>SKU</th><th>Part</th><th>Qty</th></tr>`+allInventory.map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td><span class="badge ${i.qty<i.min?'badge-low':''}">${i.qty}</span></td></tr>`).join('')+`</table>`;document.getElementById('statStock').textContent=allInventory.filter(i=>i.qty<i.min).length;}
 function addStock(){let n=prompt('Part');if(n){allInventory.push({sku:'SKU'+Date.now(),name:n,qty:10,min:5,price:500});localStorage.setItem('inv',JSON.stringify(allInventory));renderInventory();}}
 function scanBarcode(){showNotification('Scan with camera');}
+
+function kioskCheckIn(){if(CURRENT_ROLE!=='reception'&&CURRENT_ROLE!=='admin')return showNotification('Reception only','err');let n=prompt('Customer Name');if(n)showNotification('Checked In: '+n);}
+function kioskSign(){showNotification('E-Signature Captured ✓');}
 
 function loadJobs(){allJobs=JSON.parse(localStorage.getItem('jobs')||'[]');renderKanban();renderDashboard();}
 function renderKanban(){['quote','work','wait','ready','paid'].forEach(s=>{let col=document.getElementById('col-'+s);if(!col)return;col.innerHTML=allJobs.filter(j=>j.status===s).map(j=>`<div class="job-card"><b>${j.make||'Car'}</b><br>${j.customer||'Customer'}<br>R${j.total||0}</div>`).join('')||'<div style="color:#6b7280;text-align:center;padding:20px">Empty</div>';});}
