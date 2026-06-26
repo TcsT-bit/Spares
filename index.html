@@ -3,153 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e3a8a">
-<link rel="manifest" href="data:application/manifest+json,{"name":"SparesHub SA PRO","short_name":"SparesHub","start_url":"/","display":"standalone","background_color":"#0a0a0a","theme_color":"#1e3a8a","icons":[{"src":"https://via.placeholder.com/192","sizes":"192x192","type":"image/png"}]}">
-<title>SparesHub SA PRO - v4.0 ENTERPRISE DMS</title>
+<title>SparesHub OMEGA DMS v5.0</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--bg:#0a0a0a;--card:#111827;--accent:#2563eb;--green:#16a34a;--gold:#fbbf24;--purple:#7c3aed}
-[data-theme="light"]{--bg:#f1f5f9;--card:#fff;--accent:#1e40af;--green:#15803d;color:#0a0a0a}
+:root{--bg:#0a0a0a;--card:#111827;--accent:#2563eb;--green:#16a34a;--gold:#fbbf24;--purple:#7c3aed;--red:#dc2626}
+[data-theme="light"]{--bg:#f1f5f9;--card:#fff;color:#0a0a0a}
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-body{background:var(--bg);color:#f1f5f9;transition:0.3s}
-.header{background:linear-gradient(135deg,#1e3a8a,#7c3aed);padding:18px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
-.header h1{font-size:22px;display:flex;align-items:center;gap:10px}
+body{background:var(--bg);color:#f1f5f9}
+.header{background:linear-gradient(135deg,#7c3aed,#ec4899);padding:18px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:22px}
 .icon-btn{background:#1f2937;border:none;border-radius:10px;padding:10px;cursor:pointer;color:white}
-.container{max-width:1400px;margin:0 auto;padding:16px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:20px 0}
-.stat{background:var(--card);padding:20px;border-radius:16px;text-align:center;border:1px solid #1f2937}
-.stat-num{font-size:32px;font-weight:800;color:#60a5fa}
+.container{max-width:1600px;margin:0 auto;padding:16px}
 .tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto}
-.tab{flex:1;min-width:120px;padding:14px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px}
-.tab.active{background:linear-gradient(135deg,var(--accent),var(--purple))}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.card{background:var(--card);border-radius:16px;overflow:hidden;border:1px solid #1f2937;position:relative}
-.card-img{width:100%;height:200px;object-fit:cover;background:#0f172a}
-.badge{position:absolute;top:10px;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
-.verified-badge{left:10px;background:#3b82f6;color:white}
-.escrow-badge{right:10px;background:var(--gold);color:#0a0a0a}
-.vin-badge{left:10px;bottom:10px;background:var(--purple);color:white}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px}
-.btn-whatsapp{background:var(--green);color:white}
-.btn-sell{background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:16px}
-.btn-cyan{background:#06b6d4;color:white}
-.btn-gold{background:var(--gold);color:#0a0a0a}
+.tab{flex:1;min-width:140px;padding:14px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px}
+.tab.active{background:linear-gradient(135deg,var(--purple),var(--accent))}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border-radius:16px;padding:14px;border:1px solid #1f2937}
+.badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;margin-right:4px}
+.badge-quote{background:#fbbf24;color:#000}
+.badge-work{background:#3b82f6;color:#fff}
+.badge-paid{background:#16a34a;color:#fff}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px;font-size:14px}
 .btn-purple{background:var(--purple);color:white}
+.btn-green{background:var(--green);color:white}
+.btn-cyan{background:#06b6d4;color:white}
+.btn-red{background:var(--red);color:white}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
-.modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:700px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
-.hidden{display:none!important}
-input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
-.error-text{color:#f87171;font-size:12px;margin-top:-8px;margin-bottom:8px}
-.vin-info{background:#1e293b;padding:12px;border-radius:10px;margin:10px 0;font-size:13px;border:1px solid #334155}
+.modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:800px;width:90%;max-height:90vh;overflow-y:auto}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px}
+.vin-info{background:#1e293b;padding:12px;border-radius:10px;margin:10px 0;font-size:13px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px 20px;border-radius:12px;z-index:9999;display:none}
-@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto}
+.kanban-col{background:#1f2937;border-radius:12px;padding:12px;min-width:250px}
+.kanban-title{font-weight:800;margin-bottom:10px;text-align:center}
+.job-card{background:#111827;padding:10px;border-radius:8px;margin-bottom:8px;border-left:4px solid var(--purple)}
+.dvi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dvi-box{border:2px dashed #374151;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#0f172a}
+.dvi-box img{width:100%;border-radius:6px}
+.notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px;border-radius:12px;z-index:9999;display:none}
+@media(max-width:900px){.kanban{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🔧 SparesHub ENTERPRISE <span id="adminBadge"></span></h1>
-  <div><button class="icon-btn" onclick="toggleTheme()">🌓</button><button class="icon-btn" onclick="showAdmin()">👤</button></div>
+  <h1>⚡ SparesHub OMEGA DMS v5.0</h1>
+  <div><button class="icon-btn" onclick="toggleTheme()">🌓</button><button class="icon-btn" onclick="exportData()">📊</button><button class="icon-btn" onclick="showAdmin()">👤</button></div>
 </div>
 
 <div class="notification" id="notification"></div>
 
-<div class="container" id="app">
+<div class="container">
 
-<div id="loginScreen" class="login-box hidden" style="max-width:400px;margin:100px auto;padding:24px;background:var(--card);border-radius:18px">
-  <h2>Admin Login</h2>
-  <input type="email" id="adminEmail" placeholder="admin@test.com">
-  <input type="password" id="adminPass" placeholder="Password">
-  <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
-  <div style="font-size:12px;color:#6b7280;margin-top:10px">Demo: admin@test.com / admin123</div>
-  <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back</button>
-</div>
-
-<!-- JOB CARD / QUOTE MODAL -->
-<div id="quoteModal" class="modal" onclick="closeQuote(event)">
-  <div class="modal-card" onclick="event.stopPropagation()">
-    <h2>📄 Generate Quote / Invoice</h2>
-    <div id="quoteContent"></div>
-    <div class="row">
-      <button class="btn btn-purple" onclick="downloadPDF()">Download PDF</button>
-      <button class="btn btn-whatsapp" onclick="sendWhatsAppQuote()">Send via WhatsApp</button>
-    </div>
-    <button class="btn" style="background:#4b5563" onclick="closeQuote()">Close</button>
-  </div>
-</div>
-
-<!-- ADMIN -->
-<div id="adminScreen" class="hidden">
-  <div style="display:flex;justify-content:space-between;margin-bottom:20px">
-    <h2>Admin Panel DMS</h2>
-    <button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="adminLogout()">Logout</button>
-  </div>
-  <div id="adminList"></div>
-  <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back</button>
-</div>
-
-<!-- BROWSE -->
 <div id="browseScreen">
-  <div class="stats">
-    <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active</div></div>
-    <div class="stat"><div class="stat-num" id="statQuotes">0</div><div class="stat-label">Quotes Sent</div></div>
-    <div class="stat"><div class="stat-num" id="statVIN">0</div><div class="stat-label">VIN Decoded</div></div>
-    <div class="stat"><div class="stat-num" id="statLeads">0</div><div class="stat-label">Leads Today</div></div>
-  </div>
-
-  <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px">
-    <input type="text" id="searchInput" placeholder="AI Search: Toyota Hilux 15 inch...">
-  </div>
-
   <div class="tabs">
-    <div class="tab active" onclick="showTab('browse')">Browse</div>
-    <div class="tab" onclick="showTab('tyres')">Tyres/Rims</div>
-    <div class="tab" onclick="showTab('parts')">Parts</div>
-    <div class="tab" onclick="showTab('jobcard')">Job Cards</div>
+    <div class="tab active" onclick="showTab('browse')">Marketplace</div>
+    <div class="tab" onclick="showTab('jobcards')">Job Cards</div>
+    <div class="tab" onclick="showTab('dvi')">DVI</div>
+    <div class="tab" onclick="showTab('tech')">Technicians</div>
+    <div class="tab" onclick="showTab('reports')">Reports</div>
   </div>
 
-  <button class="btn btn-sell" onclick="openSellModal()">+ SELL WITH VIN DECODE</button>
-  <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
-</div>
+  <!-- MARKETPLACE -->
+  <div id="tab-browse">
+    <button class="btn btn-purple" onclick="openSellModal()">+ NEW JOB / SELL PART</button>
+    <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
+  </div>
+
+  <!-- JOB CARD KANBAN -->
+  <div id="tab-jobcards" class="hidden">
+    <div class="kanban">
+      <div class="kanban-col"><div class="kanban-title">📝 QUOTE</div><div id="col-quote"></div></div>
+      <div class="kanban-col"><div class="kanban-title">🔧 IN WORK</div><div id="col-work"></div></div>
+      <div class="kanban-col"><div class="kanban-title">⏳ WAITING PARTS</div><div id="col-wait"></div></div>
+      <div class="kanban-col"><div class="kanban-title">✅ READY</div><div id="col-ready"></div></div>
+      <div class="kanban-col"><div class="kanban-title">💰 PAID</div><div id="col-paid"></div></div>
+    </div>
+  </div>
+
+  <!-- DVI -->
+  <div id="tab-dvi" class="hidden">
+    <h3>Digital Vehicle Inspection</h3>
+    <input id="dviVin" placeholder="Enter VIN to start inspection">
+    <button class="btn btn-purple" onclick="startDVI()">Start DVI</button>
+    <div id="dviArea" class="hidden">
+      <h4 id="dviCarTitle"></h4>
+      <div class="dvi-grid">
+        <div class="dvi-box" onclick="uploadDVI(this,'front')">📸 Front<br><span>Click to upload</span></div>
+        <div class="dvi-box" onclick="uploadDVI(this,'side')">📸 Side<br><span>Click to upload</span></div>
+        <div class="dvi-box" onclick="uploadDVI(this,'rear')">📸 Rear<br><span>Click to upload</span></div>
+      </div>
+      <textarea id="dviNotes" placeholder="Technician Notes: Tyres 50%, Brakes worn..."></textarea>
+      <button class="btn btn-green" onclick="sendDVI()">Send DVI to Customer via WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- TECH BOARD -->
+  <div id="tab-tech" class="hidden">
+    <h3>Technician Board</h3>
+    <div class="row">
+      <select id="techSelect"><option>John - R350/hr</option><option>Mike - R300/hr</option></select>
+      <input id="labourHours" type="number" placeholder="Hours: 2.5">
+    </div>
+    <button class="btn btn-cyan" onclick="addLabour()">Add Labour to Quote</button>
+    <div id="techBoard"></div>
+  </div>
+
+  <!-- REPORTS -->
+  <div id="tab-reports" class="hidden">
+    <h3>Accounting Export</h3>
+    <button class="btn btn-green" onclick="exportCSV()">Export Invoices CSV for Sage/Xero</button>
+    <div id="reportStats"></div>
+  </div>
 
 </div>
 
-<!-- SELL MODAL WITH VIN -->
+</div>
+
+<!-- SELL/JOB MODAL -->
 <div id="sellModal" class="modal" onclick="closeModal(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <h2>List Spare - DMS Level</h2>
-
-    <div class="label">Step 1: VIN Decode [Like Evolve/Autoware]</div>
+    <h2>NEW JOB CARD - VIN LEVEL</h2>
     <div class="row">
-      <input id="vinInput" placeholder="17-Digit VIN: JTFHX22P5..." maxlength="17" oninput="decodeVIN()">
-      <button class="btn btn-purple" onclick="decodeVIN()">🔍 Decode VIN</button>
+      <input id="vinInput" placeholder="17-Digit VIN" maxlength="17" oninput="decodeVIN()">
+      <button class="btn btn-purple" onclick="decodeVIN()">🔍 Decode</button>
     </div>
     <div id="vinResult" class="vin-info hidden"></div>
-
-    <div class="label">Step 2: Seller Details</div>
-    <input id="sellerName" placeholder="Your Name">
-    <div id="errName" class="error-text"></div>
-    <input id="sellerWhatsapp" placeholder="WhatsApp +27...">
-    <div id="errWa" class="error-text"></div>
-
-    <div class="label">Step 3: Part Details</div>
-    <input id="itemMake" placeholder="Auto-filled from VIN" readonly>
-    <div id="errMake" class="error-text"></div>
-    <input id="itemPCD" placeholder="PCD: 6x139.7" readonly>
-    <textarea id="itemDesc" rows="2" placeholder="Description"></textarea>
-    <div id="errDesc" class="error-text"></div>
-    <input type="text" id="itemPrice" placeholder="Price R2500">
-    <div id="errPrice" class="error-text"></div>
-    <div class="ai-price" id="aiPriceHint" style="font-size:11px;color:#60a5fa"></div>
-
-    <input type="file" id="itemPhotos" multiple accept="image/*">
-    <button class="btn btn-gold" onclick="submitListing(true)">List + Escrow</button>
-    <button class="btn btn-whatsapp" onclick="submitListing(false)">List FREE</button>
+    <input id="custName" placeholder="Customer Name">
+    <input id="custWA" placeholder="Customer WhatsApp +27">
+    <input id="vehicleMake" placeholder="Auto-filled" readonly>
+    <input id="vehiclePCD" placeholder="PCD" readonly>
+    <textarea id="jobDesc" placeholder="Job Description"></textarea>
+    <div class="row">
+      <input id="partsPrice" placeholder="Parts R">
+      <input id="labourPrice" placeholder="Labour R">
+    </div>
+    <button class="btn btn-purple" onclick="createJobCard()">Create Job Card + Quote</button>
     <button class="btn" style="background:#4b5563" onclick="closeModal()">Cancel</button>
   </div>
 </div>
@@ -157,160 +149,112 @@ input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px soli
 <script>
 const { jsPDF } = window.jspdf;
 const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR.firebaseapp.com",projectId:"YOUR_ID",storageBucket:"YOUR.appspot.com",messagingSenderId:"XXX",appId:"YOUR_APP"};
-const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
-const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET";
-const VIN_API_KEY = "DEMO_KEY"; // Replace with vinapi.io or vPIC free key
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let allListings = [], currentTab='browse', currentUser=null, userRole='viewer', escrowItem=null, currentVINData=null, quoteData=null;
+let allJobs = [], currentVINData=null, currentDVI={};
 
 function showNotification(msg){let n=document.getElementById('notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
 function toggleTheme(){let t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
-if(localStorage.getItem('theme'))document.documentElement.setAttribute('data-theme',localStorage.getItem('theme'));
 
-// VIN DECODE - ENTERPRISE FEATURE
+function showTab(tab){document.querySelectorAll('[id^=tab-]').forEach(x=>x.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');if(tab==='jobcards')renderKanban();if(tab==='reports')renderReports();}
+
+// VIN DECODE TIER 0
 async function decodeVIN(){
   let vin = document.getElementById('vinInput').value.trim().toUpperCase();
   if(vin.length!== 17) return;
-
-  showNotification('Decoding VIN...');
-
-  // DEMO DATA - Replace with real API call to vPIC or vinapi.io
-  const vinDB = {
-    'JTFHX22P5': {make:'Toyota', model:'Hilux', year:'2018', engine:'2.8 D4D', pcd:'6x139.7', bolt:'M12x1.5'},
-    '1FTFW1E5X': {make:'Ford', model:'Ranger', year:'2020', engine:'2.0 Bi-Turbo', pcd:'6x139.7', bolt:'M12x1.5'},
-    'WVWZZZ6RZ': {make:'VW', model:'Polo', year:'2019', engine:'1.0 TSI', pcd:'5x100', bolt:'M14x1.5'}
-  };
-
-  let prefix = vin.substring(0,9);
-  let data = vinDB[prefix] || {make:'Unknown', model:'Unknown', year:'N/A', engine:'N/A', pcd:'Check', bolt:'Check'};
-
+  const vinDB = {'JTFHX22P5': {make:'Toyota Hilux', year:'2018', pcd:'6x139.7', bolt:'M12x1.5'}, '1FTFW1E5X': {make:'Ford Ranger', year:'2020', pcd:'6x139.7'}};
+  let data = vinDB[vin.substring(0,9)] || {make:'Unknown', year:'N/A', pcd:'Check'};
   currentVINData = data;
-  document.getElementById('itemMake').value = `${data.make} ${data.model} ${data.year}`;
-  document.getElementById('itemPCD').value = `PCD: ${data.pcd} | ${data.bolt}`;
-  document.getElementById('vinResult').innerHTML = `
-    <b>✓ VIN DECODED</b><br>
-    ${data.make} ${data.model} ${data.year}<br>
-    Engine: ${data.engine} | PCD: ${data.pcd} | Bolt: ${data.bolt}
-  `;
+  document.getElementById('vehicleMake').value = `${data.make} ${data.year}`;
+  document.getElementById('vehiclePCD').value = data.pcd;
+  document.getElementById('vinResult').innerHTML = `<b>✓ ${data.make} ${data.year}</b><br>PCD: ${data.pcd} | Bolt: ${data.bolt}`;
   document.getElementById('vinResult').classList.remove('hidden');
-
-  // AI PRICE based on VIN
-  let basePrice = data.make==='Toyota'?2500:data.make==='Ford'?2800:1800;
-  document.getElementById('aiPriceHint').textContent = `AI Price: R${basePrice} - R${basePrice+500} for ${data.make} ${data.model}`;
-
-  db.collection('spareshub_stats').doc('vinCount').set({count: firebase.firestore.FieldValue.increment(1)}, {merge:true});
-  showNotification('VIN Decoded ✓');
 }
 
-// QUOTE / INVOICE SYSTEM - LIKE EVOLVE
-function openQuote(item){
-  quoteData = item;
-  document.getElementById('quoteContent').innerHTML = `
-    <div style="background:#1e293b;padding:16px;border-radius:10px;font-size:13px">
-      <h3>SparesHub SA - QUOTE</h3>
-      <b>Item:</b> ${item.make}<br>
-      <b>Description:</b> ${item.desc}<br>
-      <b>PCD:</b> ${item.pcd || 'N/A'}<br>
-      <b>Price:</b> R${item.price.toLocaleString()}<br>
-      <b>VAT 15%:</b> R${(item.price*0.15).toLocaleString()}<br>
-      <b>TOTAL:</b> R${(item.price*1.15).toLocaleString()}<br>
-      <b>Seller:</b> ${item.sellerName} | ${item.whatsapp}<br>
-      <b>Date:</b> ${new Date().toLocaleDateString()}
-    </div>
-  `;
-  document.getElementById('quoteModal').classList.add('active');
-  db.collection('spareshub_stats').doc('quotes').set({count: firebase.firestore.FieldValue.increment(1)}, {merge:true});
-}
+// JOB CARD SYSTEM
+async function createJobCard(){
+  let n=document.getElementById('custName').value.trim();
+  let w=document.getElementById('custWA').value.trim();
+  let m=document.getElementById('vehicleMake').value;
+  let d=document.getElementById('jobDesc').value;
+  let parts=parseFloat(document.getElementById('partsPrice').value)||0;
+  let labour=parseFloat(document.getElementById('labourPrice').value)||0;
+  let total=(parts+labour)*1.15;
 
-function closeQuote(e){if(!e||e.target.id==='quoteModal')document.getElementById('quoteModal').classList.remove('active');}
-
-function downloadPDF(){
-  const doc = new jsPDF();
-  doc.setFontSize(18);
-  doc.text('SparesHub SA - QUOTE', 20, 20);
-  doc.setFontSize(12);
-  doc.text(`Item: ${quoteData.make}`, 20, 35);
-  doc.text(`Description: ${quoteData.desc}`, 20, 45);
-  doc.text(`Price: R${quoteData.price}`, 20, 55);
-  doc.text(`VAT 15%: R${(quoteData.price*0.15).toFixed(2)}`, 20, 65);
-  doc.text(`TOTAL: R${(quoteData.price*1.15).toFixed(2)}`, 20, 75);
-  doc.text(`Seller: ${quoteData.sellerName}`, 20, 85);
-  doc.save(`Quote-${quoteData.make}.pdf`);
-  showNotification('PDF Downloaded');
-}
-
-function sendWhatsAppQuote(){
-  let msg = `SparesHub Quote:\n${quoteData.make}\nR${quoteData.price}\nTotal incl VAT: R${(quoteData.price*1.15).toFixed(2)}\nContact: ${quoteData.sellerName}`;
-  window.open(`https://wa.me/${quoteData.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
-}
-
-// AUTH + CORE
-function adminLogin(){let e=document.getElementById('adminEmail').value.trim(),p=document.getElementById('adminPass').value;if(e==='admin@test.com'&&p==='admin123'){currentUser={e};userRole='admin';localStorage.setItem('spareshub_user',JSON.stringify(currentUser));document.getElementById('adminBadge').innerHTML='<span style="background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px">ADMIN</span>';showAdminPanel();}else{alert('Use: admin@test.com / admin123');}}
-function adminLogout(){currentUser=null;userRole='viewer';localStorage.removeItem('spareshub_user');document.getElementById('adminBadge').innerHTML='';showBrowse();}
-function showAdminPanel(){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.remove('hidden');loadAdmin();}
-window.onload=()=>{let s=localStorage.getItem('spareshub_user');if(s){currentUser=JSON.parse(s);userRole='admin';document.getElementById('adminBadge').innerHTML='<span style="background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px">ADMIN</span>';}}
-
-db.collection('spareshub_listings').onSnapshot(snap=>{allListings=snap.docs.map(d=>({id:d.id,...d.data()}));filterListings();loadAdmin();updateStats();});
-
-function showTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');filterListings();}
-function showAdmin(){if(!currentUser){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');}else{showAdminPanel();}}
-function showBrowse(){document.getElementById('browseScreen').classList.remove('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.add('hidden');}
-function filterListings(){let s=document.getElementById('searchInput').value.toLowerCase();let f=allListings.filter(i=>i.status==='active'&&i.desc.toLowerCase().includes(s));renderListings(f);}
-
-function renderListings(listings){let h='';listings.forEach(i=>{let img=i.photos&&i.photos[0]?i.photos[0]:'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';h+=`<div class="card"><div style="position:relative"><img src="${img}" class="card-img">${i.verified?'<div class="badge verified-badge">✓ VERIFIED</div>':''}${i.escrow?'<div class="badge escrow-badge">🛡️ ESCROW</div>':''}${i.vin?'<div class="badge vin-badge">VIN</div>':''}</div><div style="padding:14px"><div style="font-weight:700;color:#3b82f6">${i.make}</div><div style="font-size:13px;color:#9ca3af;margin:4px 0">${i.desc}</div><div style="font-size:13px;color:#60a5fa">${i.pcd||''}</div><div style="font-size:22px;font-weight:800;color:#16a34a;margin:8px 0">R${i.price.toLocaleString()}</div><button class="btn btn-purple" onclick='openQuote(${JSON.stringify(i)})'>📄 Quote</button>${i.escrow?`<button class="btn btn-gold">Buy Escrow</button>`:`<button class="btn btn-whatsapp" onclick="window.open('https://wa.me/${i.whatsapp.replace(/\D/g,'')}')">WhatsApp</button>`}</div></div>`;});document.getElementById('listingsGrid').innerHTML=h||'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares</div>';}
-
-function loadAdmin(){if(userRole==='viewer'){document.getElementById('adminList').innerHTML='<div style="color:#fbbf24">View only</div>';return;}let h='';allListings.filter(i=>i.status==='pending').forEach(i=>{h+=`<div class="card" style="margin-bottom:12px"><div style="padding:14px"><div style="font-weight:700">${i.make} - R${i.price}</div><div style="font-size:13px;color:#9ca3af">${i.desc}<br>${i.sellerName} | ${i.pcd||''}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="background:#16a34a" onclick="approveListing('${i.id}')">Approve</button><button class="btn" style="background:#dc2626" onclick="deleteListing('${i.id}')">Delete</button></div></div></div>`;});document.getElementById('adminList').innerHTML=h||'<div style="color:#6b7280;text-align:center;padding:40px">No pending</div>';}
-
-async function approveListing(id){await db.collection('spareshub_listings').doc(id).update({status:'active'});showNotification('Approved!');}
-async function deleteListing(id){if(confirm('Delete?'))await db.collection('spareshub_listings').doc(id).delete();}
-function openSellModal(){document.getElementById('sellModal').classList.add('active');}
-function closeModal(e){if(!e||e.target.id==='sellModal'){document.getElementById('sellModal').classList.remove('active');document.querySelectorAll('.error-text').forEach(x=>x.textContent='');currentVINData=null;}}
-
-async function submitListing(escrow){
-  document.querySelectorAll('.error-text').forEach(x=>x.textContent='');
-  let n=document.getElementById('sellerName').value.trim();
-  let w=document.getElementById('sellerWhatsapp').value.trim().replace(/\s/g,'');
-  let m=document.getElementById('itemMake').value.trim();
-  let pcd=document.getElementById('itemPCD').value;
-  let d=document.getElementById('itemDesc').value.trim();
-  let pRaw=document.getElementById('itemPrice').value.replace(/[^0-9.]/g,'');
-  let p=parseFloat(pRaw);
-  let files=document.getElementById('itemPhotos').files;
-
-  let hasError = false;
-  if(!n || n.length<2){document.getElementById('errName').textContent='Enter name';hasError=true;}
-  if(!w || w.length<9){document.getElementById('errWa').textContent='Enter valid +27';hasError=true;}
-  if(!m || m.length<2){document.getElementById('errMake').textContent='Enter make/model';hasError=true;}
-  if(!d || d.length<5){document.getElementById('errDesc').textContent='Min 5 chars';hasError=true;}
-  if(!pRaw || isNaN(p) || p<50){document.getElementById('errPrice').textContent='Price > R50';hasError=true;}
-  if(hasError) return;
-
-  let photos = [];
-  if(CLOUDINARY_CLOUD!== "YOUR_CLOUD_NAME" && files.length > 0){
-    for(let i=0; i<files.length; i++){
-      try{let url = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:(()=>{let f=new FormData();f.append('file',files[i]);f.append('upload_preset',CLOUDINARY_UPLOAD);return f;})()}).then(r=>r.json()).then(d=>d.secure_url);if(url)photos.push(url);}catch(e){}}
-  }
-
-  await db.collection('spareshub_listings').add({
-    sellerName:n,whatsapp:w,make:m,desc:d,price:p,pcd,vin:currentVINData?true:false,vinData:currentVINData,
-    status:'pending',escrow,verified:false,photos,date:new Date().toISOString()
+  await db.collection('spareshub_jobs').add({
+    customer:n,whatsapp:w,make:m,desc:d,parts,labour,total,status:'quote',vin:currentVINData,date:new Date().toISOString()
   });
-
-  showNotification(escrow?'Listed with Escrow ✓':'Listed ✓');
+  sendWhatsApp(w, `Hi ${n}, Quote ready: ${m} - R${total.toFixed(2)}. Reply APPROVE to start work.`);
+  showNotification('Job Card Created + WhatsApp Sent');
   closeModal();
-  document.getElementById('sellModal').querySelectorAll('input,textarea').forEach(i=>i.value='');
 }
 
-async function updateStats(){
-  document.getElementById('statListings').textContent=allListings.filter(i=>i.status==='active').length;
-  document.getElementById('statVIN').textContent=allListings.filter(i=>i.vin).length;
-  let quotesSnap = await db.collection('spareshub_stats').doc('quotes').get();
-  document.getElementById('statQuotes').textContent = quotesSnap.data()?.count || 0;
+db.collection('spareshub_jobs').onSnapshot(snap=>{allJobs=snap.docs.map(d=>({id:d.id,...d.data()}));renderKanban();renderMarketplace();});
+
+// KANBAN WORKFLOW
+function renderKanban(){
+  ['quote','work','wait','ready','paid'].forEach(s=>{
+    let col = document.getElementById('col-'+s);
+    let jobs = allJobs.filter(j=>j.status===s);
+    col.innerHTML = jobs.map(j=>`
+      <div class="job-card">
+        <b>${j.make}</b><br>
+        ${j.customer}<br>
+        R${j.total?.toFixed(2)}<br>
+        <button class="btn btn-cyan" style="padding:6px;margin-top:4px" onclick="moveJob('${j.id}','${nextStatus(s)}')">→ ${nextStatus(s).toUpperCase()}</button>
+      </div>
+    `).join('');
+  });
 }
-document.getElementById('searchInput').addEventListener('input',filterListings);
+function nextStatus(s){return {quote:'work',work:'wait',wait:'ready',ready:'paid'}[s]||'paid';}
+async function moveJob(id,status){await db.collection('spareshub_jobs').doc(id).update({status});showNotification('Moved to '+status);}
+
+// DVI SYSTEM
+function startDVI(){
+  let vin = document.getElementById('dviVin').value;
+  let job = allJobs.find(j=>j.vin&&j.make.includes(vin.substring(0,3)));
+  if(!job) return alert('Job not found');
+  currentDVI.jobId = job.id;
+  document.getElementById('dviCarTitle').textContent = job.make + ' - ' + job.customer;
+  document.getElementById('dviArea').classList.remove('hidden');
+}
+function uploadDVI(el,side){let input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=e=>{let file=e.target.files[0];let url=URL.createObjectURL(file);el.innerHTML=`<img src="${url}"><br>${side}`;currentDVI[side]=url;};input.click();}
+function sendDVI(){
+  let job = allJobs.find(j=>j.id===currentDVI.jobId);
+  let msg = `DVI for ${job.make}:\n${document.getElementById('dviNotes').value}\nPlease APPROVE repairs.`;
+  sendWhatsApp(job.whatsapp, msg);
+  showNotification('DVI Sent to Customer');
+}
+
+// TECHNICIAN + LABOUR
+function addLabour(){
+  let tech = document.getElementById('techSelect').value;
+  let hours = parseFloat(document.getElementById('labourHours').value)||0;
+  let rate = tech.includes('R350')?350:300;
+  let cost = hours*rate;
+  document.getElementById('techBoard').innerHTML += `<div>${tech} - ${hours}hrs = R${cost}</div>`;
+  document.getElementById('labourPrice').value = cost;
+}
+
+// REPORTS + EXPORT
+function renderReports(){
+  let total = allJobs.filter(j=>j.status==='paid').reduce((a,b)=>a+b.total,0);
+  document.getElementById('reportStats').innerHTML = `<div class="card">Total Revenue: R${total.toLocaleString()}<br>Jobs Completed: ${allJobs.filter(j=>j.status==='paid').length}</div>`;
+}
+function exportCSV(){
+  let csv = 'Customer,Vehicle,Total,Status\n';
+  allJobs.forEach(j=>{csv+=`${j.customer},${j.make},${j.total},${j.status}\n`;});
+  let blob=new Blob([csv],{type:'text/csv'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='SparesHub_Invoices.csv';a.click();
+  showNotification('CSV Exported for Sage/Xero');
+}
+
+// WHATSAPP + PDF
+function sendWhatsApp(num,msg){window.open(`https://wa.me/${num.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);}
+function openSellModal(){document.getElementById('sellModal').classList.add('active');}
+function closeModal(e){if(!e||e.target.id==='sellModal')document.getElementById('sellModal').classList.remove('active');}
+function renderMarketplace(){document.getElementById('listingsGrid').innerHTML = allJobs.map(j=>`<div class="card"><span class="badge badge-${j.status}">${j.status.toUpperCase()}</span><b>${j.make}</b><br>${j.customer}<br>R${j.total?.toFixed(2)}<button class="btn btn-purple" onclick="openQuote('${j.id}')">📄 Quote</button></div>`).join('');}
+function openQuote(id){let j=allJobs.find(x=>x.id===id);const doc=new jsPDF();doc.text('SparesHub INVOICE',20,20);doc.text(`${j.make} - R${j.total}`,20,30);doc.save(`Invoice-${j.customer}.pdf`);}
 </script>
 </body>
 </html>
