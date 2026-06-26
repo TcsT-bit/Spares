@@ -5,104 +5,100 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1e3a8a">
 <link rel="manifest" href="data:application/manifest+json,{"name":"SparesHub SA PRO","short_name":"SparesHub","start_url":"/","display":"standalone","background_color":"#0a0a0a","theme_color":"#1e3a8a","icons":[{"src":"https://via.placeholder.com/192","sizes":"192x192","type":"image/png"}]}">
-<title>SparesHub SA PRO - ULTRA v3.2 FIXED</title>
+<title>SparesHub SA PRO - v4.0 ENTERPRISE DMS</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--bg:#0a0a0a;--card:#111827;--accent:#2563eb;--green:#16a34a;--gold:#fbbf24}
+:root{--bg:#0a0a0a;--card:#111827;--accent:#2563eb;--green:#16a34a;--gold:#fbbf24;--purple:#7c3aed}
 [data-theme="light"]{--bg:#f1f5f9;--card:#fff;--accent:#1e40af;--green:#15803d;color:#0a0a0a}
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 body{background:var(--bg);color:#f1f5f9;transition:0.3s}
-.header{background:linear-gradient(135deg,#1e3a8a,#7c3aed);padding:18px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;justify-content:space-between;align-items:center}
+.header{background:linear-gradient(135deg,#1e3a8a,#7c3aed);padding:18px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
 .header h1{font-size:22px;display:flex;align-items:center;gap:10px}
-.header-actions{display:flex;gap:8px}
-.icon-btn{background:#1f2937;border:none;border-radius:10px;padding:10px;cursor:pointer;color:white;font-size:16px}
+.icon-btn{background:#1f2937;border:none;border-radius:10px;padding:10px;cursor:pointer;color:white}
 .container{max-width:1400px;margin:0 auto;padding:16px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:20px 0}
-.stat{background:var(--card);padding:20px;border-radius:16px;text-align:center;border:1px solid #1f2937;position:relative;overflow:hidden}
-.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.stat{background:var(--card);padding:20px;border-radius:16px;text-align:center;border:1px solid #1f2937}
 .stat-num{font-size:32px;font-weight:800;color:#60a5fa}
-.stat-label{font-size:12px;color:#9ca3af;margin-top:4px}
 .tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto}
-.tab{flex:1;min-width:100px;padding:14px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
-.tab.active{background:linear-gradient(135deg,var(--accent),#7c3aed)}
+.tab{flex:1;min-width:120px;padding:14px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px}
+.tab.active{background:linear-gradient(135deg,var(--accent),var(--purple))}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.card{background:var(--card);border-radius:16px;overflow:hidden;border:1px solid #1f2937}
+.card{background:var(--card);border-radius:16px;overflow:hidden;border:1px solid #1f2937;position:relative}
 .card-img{width:100%;height:200px;object-fit:cover;background:#0f172a}
-.verified-badge{position:absolute;top:10px;left:10px;background:#3b82f6;color:white;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
-.escrow-badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#0a0a0a;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
-.ai-price{font-size:11px;color:#60a5fa;margin-top:4px}
+.badge{position:absolute;top:10px;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
+.verified-badge{left:10px;background:#3b82f6;color:white}
+.escrow-badge{right:10px;background:var(--gold);color:#0a0a0a}
+.vin-badge{left:10px;bottom:10px;background:var(--purple);color:white}
 .btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px}
 .btn-whatsapp{background:var(--green);color:white}
-.btn-sell{background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:16px;font-size:16px}
+.btn-sell{background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:16px}
 .btn-cyan{background:#06b6d4;color:white}
-.btn-red{background:#dc2626;color:white}
 .btn-gold{background:var(--gold);color:#0a0a0a}
+.btn-purple{background:var(--purple);color:white}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
-.modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
+.modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:700px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
 .hidden{display:none!important}
-.login-box{max-width:400px;margin:100px auto;padding:24px;background:var(--card);border-radius:18px;border:1px solid #1f2937}
 input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
-.badge-admin{background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px}
-.notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px 20px;border-radius:12px;z-index:9999;display:none}
-.escrow-box{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0a0a;padding:12px;border-radius:10px;margin:10px 0;font-size:13px;font-weight:700}
 .error-text{color:#f87171;font-size:12px;margin-top:-8px;margin-bottom:8px}
-@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}}
+.vin-info{background:#1e293b;padding:12px;border-radius:10px;margin:10px 0;font-size:13px;border:1px solid #334155}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px 20px;border-radius:12px;z-index:9999;display:none}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🔧 SparesHub ULTRA <span id="adminBadge"></span></h1>
-  <div class="header-actions">
-    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-    <button class="icon-btn" onclick="installApp()" id="installBtn" style="display:none">📲</button>
-    <button class="icon-btn" onclick="showAdmin()">👤</button>
-  </div>
+  <h1>🔧 SparesHub ENTERPRISE <span id="adminBadge"></span></h1>
+  <div><button class="icon-btn" onclick="toggleTheme()">🌓</button><button class="icon-btn" onclick="showAdmin()">👤</button></div>
 </div>
 
 <div class="notification" id="notification"></div>
 
 <div class="container" id="app">
 
-<div id="loginScreen" class="login-box hidden">
+<div id="loginScreen" class="login-box hidden" style="max-width:400px;margin:100px auto;padding:24px;background:var(--card);border-radius:18px">
   <h2>Admin Login</h2>
   <input type="email" id="adminEmail" placeholder="admin@test.com">
   <input type="password" id="adminPass" placeholder="Password">
   <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
-  <div style="font-size:12px;color:#6b7280;margin-top:10px;text-align:center">Demo: admin@test.com / admin123</div>
+  <div style="font-size:12px;color:#6b7280;margin-top:10px">Demo: admin@test.com / admin123</div>
   <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back</button>
 </div>
 
-<div id="escrowModal" class="modal" onclick="closeEscrow(event)">
+<!-- JOB CARD / QUOTE MODAL -->
+<div id="quoteModal" class="modal" onclick="closeQuote(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <h2>🛡️ Safe Escrow Purchase</h2>
-    <div class="escrow-box">Money held until delivery confirmed</div>
-    <div id="escrowItem"></div>
-    <input id="buyerName" placeholder="Your Name">
-    <input id="buyerWhatsapp" placeholder="Your WhatsApp">
-    <button class="btn btn-gold" onclick="payEscrow()">Pay Escrow R<span id="escrowPrice">0</span></button>
-    <button class="btn" style="background:#4b5563" onclick="closeEscrow()">Cancel</button>
+    <h2>📄 Generate Quote / Invoice</h2>
+    <div id="quoteContent"></div>
+    <div class="row">
+      <button class="btn btn-purple" onclick="downloadPDF()">Download PDF</button>
+      <button class="btn btn-whatsapp" onclick="sendWhatsAppQuote()">Send via WhatsApp</button>
+    </div>
+    <button class="btn" style="background:#4b5563" onclick="closeQuote()">Close</button>
   </div>
 </div>
 
+<!-- ADMIN -->
 <div id="adminScreen" class="hidden">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <h2>Admin Panel</h2>
+  <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+    <h2>Admin Panel DMS</h2>
     <button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="adminLogout()">Logout</button>
   </div>
   <div id="adminList"></div>
   <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back</button>
 </div>
 
+<!-- BROWSE -->
 <div id="browseScreen">
   <div class="stats">
     <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active</div></div>
-    <div class="stat"><div class="stat-num" id="statEscrow">R0</div><div class="stat-label">In Escrow</div></div>
-    <div class="stat"><div class="stat-num" id="statParts">0</div><div class="stat-label">Parts</div></div>
+    <div class="stat"><div class="stat-num" id="statQuotes">0</div><div class="stat-label">Quotes Sent</div></div>
+    <div class="stat"><div class="stat-num" id="statVIN">0</div><div class="stat-label">VIN Decoded</div></div>
     <div class="stat"><div class="stat-num" id="statLeads">0</div><div class="stat-label">Leads Today</div></div>
   </div>
 
@@ -112,99 +108,150 @@ input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px soli
 
   <div class="tabs">
     <div class="tab active" onclick="showTab('browse')">Browse</div>
-    <div class="tab" onclick="showTab('tyres')">Tyres</div>
+    <div class="tab" onclick="showTab('tyres')">Tyres/Rims</div>
     <div class="tab" onclick="showTab('parts')">Parts</div>
+    <div class="tab" onclick="showTab('jobcard')">Job Cards</div>
   </div>
 
-  <button class="btn btn-sell" onclick="openSellModal()">+ SELL WITH AI PRICING</button>
+  <button class="btn btn-sell" onclick="openSellModal()">+ SELL WITH VIN DECODE</button>
   <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
 </div>
 
 </div>
 
-<!-- SELL MODAL FIXED -->
+<!-- SELL MODAL WITH VIN -->
 <div id="sellModal" class="modal" onclick="closeModal(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <h2>List Your Spare - AI Powered</h2>
+    <h2>List Spare - DMS Level</h2>
+
+    <div class="label">Step 1: VIN Decode [Like Evolve/Autoware]</div>
+    <div class="row">
+      <input id="vinInput" placeholder="17-Digit VIN: JTFHX22P5..." maxlength="17" oninput="decodeVIN()">
+      <button class="btn btn-purple" onclick="decodeVIN()">🔍 Decode VIN</button>
+    </div>
+    <div id="vinResult" class="vin-info hidden"></div>
+
+    <div class="label">Step 2: Seller Details</div>
     <input id="sellerName" placeholder="Your Name">
     <div id="errName" class="error-text"></div>
     <input id="sellerWhatsapp" placeholder="WhatsApp +27...">
     <div id="errWa" class="error-text"></div>
-    <input id="itemMake" placeholder="Toyota Hilux 2018" oninput="aiSuggestPrice()">
+
+    <div class="label">Step 3: Part Details</div>
+    <input id="itemMake" placeholder="Auto-filled from VIN" readonly>
     <div id="errMake" class="error-text"></div>
-    <textarea id="itemDesc" rows="2" placeholder="Description min 5 chars"></textarea>
+    <input id="itemPCD" placeholder="PCD: 6x139.7" readonly>
+    <textarea id="itemDesc" rows="2" placeholder="Description"></textarea>
     <div id="errDesc" class="error-text"></div>
-    <input type="text" id="itemPrice" placeholder="Price R2500" inputmode="numeric">
+    <input type="text" id="itemPrice" placeholder="Price R2500">
     <div id="errPrice" class="error-text"></div>
-    <div class="ai-price" id="aiPriceHint"></div>
+    <div class="ai-price" id="aiPriceHint" style="font-size:11px;color:#60a5fa"></div>
+
     <input type="file" id="itemPhotos" multiple accept="image/*">
-    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">Photos optional if Cloudinary not set</div>
-    <button class="btn btn-gold" onclick="submitListing(true)">List + Escrow Enabled</button>
+    <button class="btn btn-gold" onclick="submitListing(true)">List + Escrow</button>
     <button class="btn btn-whatsapp" onclick="submitListing(false)">List FREE</button>
     <button class="btn" style="background:#4b5563" onclick="closeModal()">Cancel</button>
   </div>
 </div>
 
 <script>
-// CONFIG - FILL THESE OR LEAVE AS PLACEHOLDER
+const { jsPDF } = window.jspdf;
 const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR.firebaseapp.com",projectId:"YOUR_ID",storageBucket:"YOUR.appspot.com",messagingSenderId:"XXX",appId:"YOUR_APP"};
-const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME"; // Leave as placeholder to skip photos
+const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
 const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET";
+const VIN_API_KEY = "DEMO_KEY"; // Replace with vinapi.io or vPIC free key
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let allListings = [], currentTab='browse', currentUser=null, userRole='viewer', escrowItem=null;
+let allListings = [], currentTab='browse', currentUser=null, userRole='viewer', escrowItem=null, currentVINData=null, quoteData=null;
 
-// PWA + THEME
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.deferredPrompt=e;document.getElementById('installBtn').style.display='block';});
-function installApp(){if(window.deferredPrompt){window.deferredPrompt.prompt();}}
+function showNotification(msg){let n=document.getElementById('notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
 function toggleTheme(){let t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
 if(localStorage.getItem('theme'))document.documentElement.setAttribute('data-theme',localStorage.getItem('theme'));
 
-function showNotification(msg){let n=document.getElementById('notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
+// VIN DECODE - ENTERPRISE FEATURE
+async function decodeVIN(){
+  let vin = document.getElementById('vinInput').value.trim().toUpperCase();
+  if(vin.length!== 17) return;
 
-// AI PRICING
-const priceData = {toyota:{hilux:{rim:2500,tyre:800},fortuner:{rim:3200}},ford:{ranger:{rim:2800}},vw:{polo:{rim:1800}}};
-function aiSuggestPrice(){
-  let make = document.getElementById('itemMake').value.toLowerCase();
-  let hint = document.getElementById('aiPriceHint');
-  for(let brand in priceData){
-    if(make.includes(brand)){
-      for(let model in priceData[brand]){
-        if(make.includes(model)){
-          let avg = Object.values(priceData[brand][model])[0];
-          hint.textContent = `AI Suggest: R${avg} - R${avg+500}`;
-          document.getElementById('itemPrice').placeholder = `AI: R${avg}`;
-          return;
-        }
-      }
-    }
-  }
-  hint.textContent = '';
+  showNotification('Decoding VIN...');
+
+  // DEMO DATA - Replace with real API call to vPIC or vinapi.io
+  const vinDB = {
+    'JTFHX22P5': {make:'Toyota', model:'Hilux', year:'2018', engine:'2.8 D4D', pcd:'6x139.7', bolt:'M12x1.5'},
+    '1FTFW1E5X': {make:'Ford', model:'Ranger', year:'2020', engine:'2.0 Bi-Turbo', pcd:'6x139.7', bolt:'M12x1.5'},
+    'WVWZZZ6RZ': {make:'VW', model:'Polo', year:'2019', engine:'1.0 TSI', pcd:'5x100', bolt:'M14x1.5'}
+  };
+
+  let prefix = vin.substring(0,9);
+  let data = vinDB[prefix] || {make:'Unknown', model:'Unknown', year:'N/A', engine:'N/A', pcd:'Check', bolt:'Check'};
+
+  currentVINData = data;
+  document.getElementById('itemMake').value = `${data.make} ${data.model} ${data.year}`;
+  document.getElementById('itemPCD').value = `PCD: ${data.pcd} | ${data.bolt}`;
+  document.getElementById('vinResult').innerHTML = `
+    <b>✓ VIN DECODED</b><br>
+    ${data.make} ${data.model} ${data.year}<br>
+    Engine: ${data.engine} | PCD: ${data.pcd} | Bolt: ${data.bolt}
+  `;
+  document.getElementById('vinResult').classList.remove('hidden');
+
+  // AI PRICE based on VIN
+  let basePrice = data.make==='Toyota'?2500:data.make==='Ford'?2800:1800;
+  document.getElementById('aiPriceHint').textContent = `AI Price: R${basePrice} - R${basePrice+500} for ${data.make} ${data.model}`;
+
+  db.collection('spareshub_stats').doc('vinCount').set({count: firebase.firestore.FieldValue.increment(1)}, {merge:true});
+  showNotification('VIN Decoded ✓');
 }
 
-// CLOUDINARY UPLOAD - SAFE
-async function uploadToCloudinary(file){
-  if(CLOUDINARY_CLOUD === "YOUR_CLOUD_NAME") return null;
-  let formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD);
-  let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method: 'POST', body: formData});
-  let data = await res.json();
-  return data.secure_url;
+// QUOTE / INVOICE SYSTEM - LIKE EVOLVE
+function openQuote(item){
+  quoteData = item;
+  document.getElementById('quoteContent').innerHTML = `
+    <div style="background:#1e293b;padding:16px;border-radius:10px;font-size:13px">
+      <h3>SparesHub SA - QUOTE</h3>
+      <b>Item:</b> ${item.make}<br>
+      <b>Description:</b> ${item.desc}<br>
+      <b>PCD:</b> ${item.pcd || 'N/A'}<br>
+      <b>Price:</b> R${item.price.toLocaleString()}<br>
+      <b>VAT 15%:</b> R${(item.price*0.15).toLocaleString()}<br>
+      <b>TOTAL:</b> R${(item.price*1.15).toLocaleString()}<br>
+      <b>Seller:</b> ${item.sellerName} | ${item.whatsapp}<br>
+      <b>Date:</b> ${new Date().toLocaleDateString()}
+    </div>
+  `;
+  document.getElementById('quoteModal').classList.add('active');
+  db.collection('spareshub_stats').doc('quotes').set({count: firebase.firestore.FieldValue.increment(1)}, {merge:true});
 }
 
-// ESCROW
-function openEscrow(item){escrowItem=item;document.getElementById('escrowPrice').textContent=item.price;document.getElementById('escrowItem').innerHTML=`<b>${item.make}</b> - R${item.price}`;document.getElementById('escrowModal').classList.add('active');}
-function closeEscrow(e){if(!e||e.target.id==='escrowModal')document.getElementById('escrowModal').classList.remove('active');}
-function payEscrow(){let name=document.getElementById('buyerName').value.trim();let wa=document.getElementById('buyerWhatsapp').value.trim();if(!name||!wa)return alert('Fill all fields');db.collection('escrow_transactions').add({listingId:escrowItem.id,buyer:name,buyerWa:wa,sellerWa:escrowItem.whatsapp,amount:escrowItem.price,status:'held',date:new Date().toISOString()});showNotification('Escrow payment initiated');closeEscrow();}
+function closeQuote(e){if(!e||e.target.id==='quoteModal')document.getElementById('quoteModal').classList.remove('active');}
 
-// AUTH
-function adminLogin(){let e=document.getElementById('adminEmail').value.trim(),p=document.getElementById('adminPass').value;if(e==='admin@test.com'&&p==='admin123'){currentUser={e};userRole='admin';localStorage.setItem('spareshub_user',JSON.stringify(currentUser));document.getElementById('adminBadge').innerHTML='<span class="badge-admin">ADMIN</span>';showAdminPanel();}else{alert('Use: admin@test.com / admin123');}}
+function downloadPDF(){
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text('SparesHub SA - QUOTE', 20, 20);
+  doc.setFontSize(12);
+  doc.text(`Item: ${quoteData.make}`, 20, 35);
+  doc.text(`Description: ${quoteData.desc}`, 20, 45);
+  doc.text(`Price: R${quoteData.price}`, 20, 55);
+  doc.text(`VAT 15%: R${(quoteData.price*0.15).toFixed(2)}`, 20, 65);
+  doc.text(`TOTAL: R${(quoteData.price*1.15).toFixed(2)}`, 20, 75);
+  doc.text(`Seller: ${quoteData.sellerName}`, 20, 85);
+  doc.save(`Quote-${quoteData.make}.pdf`);
+  showNotification('PDF Downloaded');
+}
+
+function sendWhatsAppQuote(){
+  let msg = `SparesHub Quote:\n${quoteData.make}\nR${quoteData.price}\nTotal incl VAT: R${(quoteData.price*1.15).toFixed(2)}\nContact: ${quoteData.sellerName}`;
+  window.open(`https://wa.me/${quoteData.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+}
+
+// AUTH + CORE
+function adminLogin(){let e=document.getElementById('adminEmail').value.trim(),p=document.getElementById('adminPass').value;if(e==='admin@test.com'&&p==='admin123'){currentUser={e};userRole='admin';localStorage.setItem('spareshub_user',JSON.stringify(currentUser));document.getElementById('adminBadge').innerHTML='<span style="background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px">ADMIN</span>';showAdminPanel();}else{alert('Use: admin@test.com / admin123');}}
 function adminLogout(){currentUser=null;userRole='viewer';localStorage.removeItem('spareshub_user');document.getElementById('adminBadge').innerHTML='';showBrowse();}
 function showAdminPanel(){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.remove('hidden');loadAdmin();}
-window.onload=()=>{let s=localStorage.getItem('spareshub_user');if(s){currentUser=JSON.parse(s);userRole='admin';document.getElementById('adminBadge').innerHTML='<span class="badge-admin">ADMIN</span>';}}
+window.onload=()=>{let s=localStorage.getItem('spareshub_user');if(s){currentUser=JSON.parse(s);userRole='admin';document.getElementById('adminBadge').innerHTML='<span style="background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px">ADMIN</span>';}}
 
 db.collection('spareshub_listings').onSnapshot(snap=>{allListings=snap.docs.map(d=>({id:d.id,...d.data()}));filterListings();loadAdmin();updateStats();});
 
@@ -212,52 +259,44 @@ function showTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(t
 function showAdmin(){if(!currentUser){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');}else{showAdminPanel();}}
 function showBrowse(){document.getElementById('browseScreen').classList.remove('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.add('hidden');}
 function filterListings(){let s=document.getElementById('searchInput').value.toLowerCase();let f=allListings.filter(i=>i.status==='active'&&i.desc.toLowerCase().includes(s));renderListings(f);}
-function renderListings(listings){let h='';listings.forEach(i=>{let img=i.photos&&i.photos[0]?i.photos[0]:'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';h+=`<div class="card"><div style="position:relative"><img src="${img}" class="card-img">${i.verified?'<div class="verified-badge">✓ VERIFIED</div>':''}${i.escrow?'<div class="escrow-badge">🛡️ ESCROW</div>':''}</div><div style="padding:14px"><div style="font-weight:700;color:#3b82f6">${i.make}</div><div style="font-size:13px;color:#9ca3af;margin:4px 0">${i.desc}</div><div style="font-size:22px;font-weight:800;color:#16a34a;margin:8px 0">R${i.price.toLocaleString()}</div>${i.escrow?`<button class="btn btn-gold" onclick='openEscrow(${JSON.stringify(i)})'>Buy with Escrow</button>`:`<button class="btn btn-whatsapp" onclick="window.open('https://wa.me/${i.whatsapp.replace(/\D/g,'')}')">WhatsApp</button>`}</div></div>`;});document.getElementById('listingsGrid').innerHTML=h||'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares</div>';}
-function loadAdmin(){if(userRole==='viewer'){document.getElementById('adminList').innerHTML='<div style="color:#fbbf24">View only</div>';return;}let h='';allListings.filter(i=>i.status==='pending').forEach(i=>{h+=`<div class="card" style="margin-bottom:12px"><div style="padding:14px"><div style="font-weight:700">${i.make} - R${i.price}</div><div style="font-size:13px;color:#9ca3af">${i.desc}<br>${i.sellerName}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="background:#16a34a" onclick="approveListing('${i.id}')">Approve</button><button class="btn" style="background:#dc2626" onclick="deleteListing('${i.id}')">Delete</button></div></div></div>`;});document.getElementById('adminList').innerHTML=h||'<div style="color:#6b7280;text-align:center;padding:40px">No pending</div>';}
+
+function renderListings(listings){let h='';listings.forEach(i=>{let img=i.photos&&i.photos[0]?i.photos[0]:'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';h+=`<div class="card"><div style="position:relative"><img src="${img}" class="card-img">${i.verified?'<div class="badge verified-badge">✓ VERIFIED</div>':''}${i.escrow?'<div class="badge escrow-badge">🛡️ ESCROW</div>':''}${i.vin?'<div class="badge vin-badge">VIN</div>':''}</div><div style="padding:14px"><div style="font-weight:700;color:#3b82f6">${i.make}</div><div style="font-size:13px;color:#9ca3af;margin:4px 0">${i.desc}</div><div style="font-size:13px;color:#60a5fa">${i.pcd||''}</div><div style="font-size:22px;font-weight:800;color:#16a34a;margin:8px 0">R${i.price.toLocaleString()}</div><button class="btn btn-purple" onclick='openQuote(${JSON.stringify(i)})'>📄 Quote</button>${i.escrow?`<button class="btn btn-gold">Buy Escrow</button>`:`<button class="btn btn-whatsapp" onclick="window.open('https://wa.me/${i.whatsapp.replace(/\D/g,'')}')">WhatsApp</button>`}</div></div>`;});document.getElementById('listingsGrid').innerHTML=h||'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares</div>';}
+
+function loadAdmin(){if(userRole==='viewer'){document.getElementById('adminList').innerHTML='<div style="color:#fbbf24">View only</div>';return;}let h='';allListings.filter(i=>i.status==='pending').forEach(i=>{h+=`<div class="card" style="margin-bottom:12px"><div style="padding:14px"><div style="font-weight:700">${i.make} - R${i.price}</div><div style="font-size:13px;color:#9ca3af">${i.desc}<br>${i.sellerName} | ${i.pcd||''}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="background:#16a34a" onclick="approveListing('${i.id}')">Approve</button><button class="btn" style="background:#dc2626" onclick="deleteListing('${i.id}')">Delete</button></div></div></div>`;});document.getElementById('adminList').innerHTML=h||'<div style="color:#6b7280;text-align:center;padding:40px">No pending</div>';}
+
 async function approveListing(id){await db.collection('spareshub_listings').doc(id).update({status:'active'});showNotification('Approved!');}
 async function deleteListing(id){if(confirm('Delete?'))await db.collection('spareshub_listings').doc(id).delete();}
 function openSellModal(){document.getElementById('sellModal').classList.add('active');}
-function closeModal(e){if(!e||e.target.id==='sellModal'){document.getElementById('sellModal').classList.remove('active');document.querySelectorAll('.error-text').forEach(x=>x.textContent='');}}
+function closeModal(e){if(!e||e.target.id==='sellModal'){document.getElementById('sellModal').classList.remove('active');document.querySelectorAll('.error-text').forEach(x=>x.textContent='');currentVINData=null;}}
 
-// GOD MODE SUBMIT - FIXED VALIDATION
 async function submitListing(escrow){
-  // Clear errors
   document.querySelectorAll('.error-text').forEach(x=>x.textContent='');
-
-  // Get + Clean data
   let n=document.getElementById('sellerName').value.trim();
   let w=document.getElementById('sellerWhatsapp').value.trim().replace(/\s/g,'');
   let m=document.getElementById('itemMake').value.trim();
+  let pcd=document.getElementById('itemPCD').value;
   let d=document.getElementById('itemDesc').value.trim();
-  let pRaw=document.getElementById('itemPrice').value.replace(/[^0-9.]/g,''); // STRIP R AND SPACES
+  let pRaw=document.getElementById('itemPrice').value.replace(/[^0-9.]/g,'');
   let p=parseFloat(pRaw);
   let files=document.getElementById('itemPhotos').files;
 
   let hasError = false;
   if(!n || n.length<2){document.getElementById('errName').textContent='Enter name';hasError=true;}
-  if(!w || w.length<9){document.getElementById('errWa').textContent='Enter valid +27 number';hasError=true;}
+  if(!w || w.length<9){document.getElementById('errWa').textContent='Enter valid +27';hasError=true;}
   if(!m || m.length<2){document.getElementById('errMake').textContent='Enter make/model';hasError=true;}
-  if(!d || d.length<5){document.getElementById('errDesc').textContent='Min 5 characters';hasError=true;}
-  if(!pRaw || isNaN(p) || p<50){document.getElementById('errPrice').textContent='Enter price > R50';hasError=true;}
-
+  if(!d || d.length<5){document.getElementById('errDesc').textContent='Min 5 chars';hasError=true;}
+  if(!pRaw || isNaN(p) || p<50){document.getElementById('errPrice').textContent='Price > R50';hasError=true;}
   if(hasError) return;
 
-  showNotification('Saving...');
-
-  // Upload photos only if Cloudinary configured
   let photos = [];
   if(CLOUDINARY_CLOUD!== "YOUR_CLOUD_NAME" && files.length > 0){
     for(let i=0; i<files.length; i++){
-      try{
-        let url = await uploadToCloudinary(files[i]);
-        if(url) photos.push(url);
-      }catch(e){console.log('Upload fail:',e);}
-    }
+      try{let url = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:(()=>{let f=new FormData();f.append('file',files[i]);f.append('upload_preset',CLOUDINARY_UPLOAD);return f;})()}).then(r=>r.json()).then(d=>d.secure_url);if(url)photos.push(url);}catch(e){}}
   }
 
   await db.collection('spareshub_listings').add({
-    sellerName:n,whatsapp:w,make:m,desc:d,price:p,status:'pending',
-    escrow,verified:false,photos,date:new Date().toISOString()
+    sellerName:n,whatsapp:w,make:m,desc:d,price:p,pcd,vin:currentVINData?true:false,vinData:currentVINData,
+    status:'pending',escrow,verified:false,photos,date:new Date().toISOString()
   });
 
   showNotification(escrow?'Listed with Escrow ✓':'Listed ✓');
@@ -267,8 +306,9 @@ async function submitListing(escrow){
 
 async function updateStats(){
   document.getElementById('statListings').textContent=allListings.filter(i=>i.status==='active').length;
-  let escrowTotal=allListings.filter(i=>i.escrow).reduce((a,b)=>a+b.price,0);
-  document.getElementById('statEscrow').textContent='R'+escrowTotal.toLocaleString();
+  document.getElementById('statVIN').textContent=allListings.filter(i=>i.vin).length;
+  let quotesSnap = await db.collection('spareshub_stats').doc('quotes').get();
+  document.getElementById('statQuotes').textContent = quotesSnap.data()?.count || 0;
 }
 document.getElementById('searchInput').addEventListener('input',filterListings);
 </script>
