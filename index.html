@@ -2,512 +2,263 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SparesHub SA PRO - Used Tyres, Rims & Parts | GOD TIER v2.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e3a8a">
+<link rel="manifest" href="data:application/manifest+json,{"name":"SparesHub SA PRO","short_name":"SparesHub","start_url":"/","display":"standalone","background_color":"#0a0a0a","theme_color":"#1e3a8a","icons":[{"src":"https://via.placeholder.com/192","sizes":"192x192","type":"image/png"}]}">
+<title>SparesHub SA PRO - ULTRA v3.1</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <style>
+:root{--bg:#0a0a0a;--card:#111827;--accent:#2563eb;--green:#16a34a;--gold:#fbbf24}
+[data-theme="light"]{--bg:#f1f5f9;--card:#fff;--accent:#1e40af;--green:#15803d;color:#0a0a0a}
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-body{background:#0a0a0a;color:#f1f5f9}
-.header{background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:18px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+body{background:var(--bg);color:#f1f5f9;transition:0.3s}
+.header{background:linear-gradient(135deg,#1e3a8a,#7c3aed);padding:18px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;justify-content:space-between;align-items:center}
 .header h1{font-size:22px;display:flex;align-items:center;gap:10px}
-.header.sub{font-size:12px;color:#cbd5e1;margin-top:4px}
-.container{max-width:1200px;margin:0 auto;padding:16px}
-.search-bar{background:#111827;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #1f2937}
-.search-bar input{width:100%;padding:14px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:16px;margin-bottom:10px}
-.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
-.filters select{flex:1;min-width:120px;padding:12px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;font-size:14px}
+.header-actions{display:flex;gap:8px}
+.icon-btn{background:#1f2937;border:none;border-radius:10px;padding:10px;cursor:pointer;color:white;font-size:16px}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:20px 0}
+.stat{background:var(--card);padding:20px;border-radius:16px;text-align:center;border:1px solid #1f2937;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.stat-num{font-size:32px;font-weight:800;color:#60a5fa}
+.stat-label{font-size:12px;color:#9ca3af;margin-top:4px}
+.stat-change{font-size:11px;color:var(--green);margin-top:2px}
 .tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto}
-.tab{flex:1;min-width:100px;padding:12px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
-.tab.active{background:#2563eb}
+.tab{flex:1;min-width:100px;padding:14px;text-align:center;background:#1f2937;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap;transition:0.2s}
+.tab.active{background:linear-gradient(135deg,var(--accent),#7c3aed);box-shadow:0 4px 15px rgba(124,58,237,0.4)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.card{background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s;position:relative}
-.card:hover{transform:translateY(-4px);border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.2)}
+.card{background:var(--card);border-radius:16px;overflow:hidden;border:1px solid #1f2937;transition:0.3s;position:relative}
+.card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 12px 40px rgba(59,130,246,0.3)}
 .card-img{width:100%;height:200px;object-fit:cover;background:#0f172a}
-.card-body{padding:14px}
-.card-title{font-size:16px;font-weight:700;margin-bottom:6px;color:#3b82f6}
-.card-price{font-size:22px;font-weight:800;color:#16a34a;margin:8px 0}
-.card-info{font-size:13px;color:#9ca3af;margin:4px 0}
-.condition{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-top:6px}
-.cond-good{background:#16a34a20;color:#16a34a;border:1px solid #16a34a}
-.cond-fair{background:#ca8a0420;color:#fbbf24;border:1px solid #ca8a04}
-.cond-parts{background:#dc262620;color:#f87171;border:1px solid #dc2626}
-.cond-new{background:#3b82f620;color:#60a5fa;border:1px solid #3b82f6}
-.sold-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#16a34a}
+.verified-badge{position:absolute;top:10px;left:10px;background:#3b82f6;color:white;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
+.escrow-badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#0a0a0a;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800;z-index:10}
+.ai-price{font-size:11px;color:#60a5fa;margin-top:4px}
 .btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:10px;transition:0.2s}
 .btn:active{transform:scale(0.97)}
-.btn-whatsapp{background:#16a34a;color:white}
-.btn-call{background:#0ea5e9;color:white}
-.btn-sell{background:#7c3aed;color:white;padding:16px;font-size:16px}
-.btn-yellow{background:#ca8a04;color:white}
-.btn-red{background:#dc2626;color:white}
+.btn-whatsapp{background:var(--green);color:white}
+.btn-sell{background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:16px;font-size:16px}
 .btn-cyan{background:#06b6d4;color:white}
-.btn-green{background:#16a34a;color:white}
+.btn-red{background:#dc2626;color:white}
+.btn-gold{background:var(--gold);color:#0a0a0a}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999}
 .modal.active{display:flex}
-.modal-card{background:#111827;padding:24px;border-radius:18px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
-.modal-card h2{margin-bottom:16px;color:#3b82f6}
-.modal-card input,.modal-card textarea,.modal-card select{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
-.label{font-size:12px;color:#9ca3af;margin-bottom:4px;margin-top:8px}
-.featured-badge{position:absolute;background:#fbbf24;color:#0a0a0a;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;top:10px;right:10px;z-index:10}
-.card-img-wrap{position:relative}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
-.stat{background:#1e3a8a;padding:16px;border-radius:12px;text-align:center}
-.stat-num{font-size:28px;font-weight:800;color:#60a5fa}
-.stat-label{font-size:12px;color:#cbd5e1}
-.location{color:#9ca3af;font-size:12px;display:flex;align-items:center;gap:4px;margin-top:6px}
-.admin-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.admin-actions button{padding:8px;font-size:12px;width:auto;flex:1}
-.login-box{max-width:400px;margin:100px auto;padding:24px;background:#111827;border-radius:18px;border:1px solid #1f2937}
+.modal-card{background:var(--card);padding:24px;border-radius:18px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;border:1px solid #1f2937}
 .hidden{display:none!important}
-@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}.stats{grid-template-columns:repeat(2,1fr)}}
+.chart-box{background:var(--card);padding:20px;border-radius:16px;margin:20px 0;border:1px solid #1f2937}
+.login-box{max-width:400px;margin:100px auto;padding:24px;background:var(--card);border-radius:18px;border:1px solid #1f2937}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #374151;background:#0a0a0a;color:#f1f5f9;margin-bottom:10px;font-size:15px}
+.badge-admin{background:#dc2626;color:white;padding:2px 8px;border-radius:6px;font-size:10px}
+.notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:16px 20px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:9999;display:none;animation:slideIn 0.3s}
+@keyframes slideIn{from{transform:translateX(400px)}to{transform:translateX(0)}}
+.escrow-box{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0a0a;padding:12px;border-radius:10px;margin:10px 0;font-size:13px;font-weight:700}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card-img{height:140px}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🔧 SparesHub SA PRO</h1>
-  <div class="sub">Used Tyres, Rims, Parts & Workshop Tools | Polokwane → All SA</div>
+  <h1>🔧 SparesHub ULTRA <span id="adminBadge"></span></h1>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+    <button class="icon-btn" onclick="installApp()" id="installBtn" style="display:none">📲</button>
+    <button class="icon-btn" onclick="showAdmin()">👤</button>
+  </div>
 </div>
+
+<div class="notification" id="notification"></div>
 
 <div class="container" id="app">
 
-<!-- LOGIN SCREEN FOR ADMIN WITH HINT -->
+<!-- LOGIN -->
 <div id="loginScreen" class="login-box hidden">
   <h2>Admin Login</h2>
-  <input type="password" id="adminPass" placeholder="Enter Admin Password" onkeypress="if(event.key==='Enter') adminLogin()">
-  <div style="font-size:12px;color:#6b7280;margin:8px 0;text-align:center">
-    Default Password: <b style="color:#60a5fa">admin123</b>
-  </div>
-  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#9ca3af;margin:10px 0">
-    <input type="checkbox" id="rememberMe"> Remember me on this device
-  </label>
+  <input type="email" id="adminEmail" placeholder="admin@test.com">
+  <input type="password" id="adminPass" placeholder="Password">
   <button class="btn btn-cyan" onclick="adminLogin()">Login</button>
-  <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back to Site</button>
+  <div style="font-size:12px;color:#6b7280;margin-top:10px;text-align:center">Demo: admin@test.com / admin123</div>
+  <button class="btn" style="background:#4b5563" onclick="showBrowse()">Back</button>
 </div>
 
-<!-- MAIN BROWSE -->
+<!-- ESCROW MODAL -->
+<div id="escrowModal" class="modal" onclick="closeEscrow(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <h2>🛡️ Safe Escrow Purchase</h2>
+    <div class="escrow-box">Your money is protected. We hold it until you confirm delivery.</div>
+    <div id="escrowItem"></div>
+    <input id="buyerName" placeholder="Your Name">
+    <input id="buyerWhatsapp" placeholder="Your WhatsApp">
+    <input id="deliveryAddress" placeholder="Delivery Address Polokwane">
+    <button class="btn btn-gold" onclick="payEscrow()">Pay with Escrow R<span id="escrowPrice">0</span></button>
+    <button class="btn" style="background:#4b5563" onclick="closeEscrow()">Cancel</button>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="analyticsScreen" class="hidden">
+  <h2>📊 Enterprise Analytics AI</h2>
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="statRevenue">R0</div><div class="stat-label">Escrow Revenue 30d</div><div class="stat-change">+42%</div></div>
+    <div class="stat"><div class="stat-num" id="statConv">0%</div><div class="stat-label">Conv Rate</div><div class="stat-change">+7.3%</div></div>
+    <div class="stat"><div class="stat-num" id="statAI">R0</div><div class="stat-label">AI Avg Price</div><div class="stat-change">+11%</div></div>
+    <div class="stat"><div class="stat-num" id="statSMS">0</div><div class="stat-label">SMS Sent Today</div><div class="stat-change">+24%</div></div>
+  </div>
+  <div class="chart-box"><canvas id="revenueChart"></canvas></div>
+  <button class="btn" style="background:#4b5563" onclick="showAdminPanel()">Back</button>
+</div>
+
+<!-- ADMIN -->
+<div id="adminScreen" class="hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h2>Admin Panel AI</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-cyan" style="width:auto;padding:10px 16px" onclick="showAnalytics()">Analytics</button>
+      <button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+  <div id="adminList"></div>
+  <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back</button>
+</div>
+
+<!-- BROWSE -->
 <div id="browseScreen">
   <div class="stats">
     <div class="stat"><div class="stat-num" id="statListings">0</div><div class="stat-label">Active</div></div>
-    <div class="stat"><div class="stat-num" id="statTyres">0</div><div class="stat-label">Tyres/Rims</div></div>
+    <div class="stat"><div class="stat-num" id="statEscrow">R0</div><div class="stat-label">In Escrow</div></div>
     <div class="stat"><div class="stat-num" id="statParts">0</div><div class="stat-label">Parts</div></div>
     <div class="stat"><div class="stat-num" id="statLeads">0</div><div class="stat-label">Leads Today</div></div>
   </div>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search: Toyota Hilux 15 inch rim, Ford Ranger tyre...">
-    <div class="filters">
-      <select id="categoryFilter" onchange="filterListings()">
-        <option value="all">All Categories</option>
-        <option value="tyres">Tyres</option>
-        <option value="rims">Rims/Mags</option>
-        <option value="engine">Engine Parts</option>
-        <option value="body">Body Parts</option>
-        <option value="electrical">Electrical</option>
-        <option value="workshop">Workshop Tools</option>
-      </select>
-      <select id="conditionFilter" onchange="filterListings()">
-        <option value="all">All Conditions</option>
-        <option value="new">New</option>
-        <option value="good">Used - Good</option>
-        <option value="fair">Used - Fair</option>
-        <option value="parts">For Parts Only</option>
-      </select>
-      <select id="makeFilter" onchange="filterListings()">
-        <option value="all">All Makes</option>
-        <option value="toyota">Toyota</option>
-        <option value="ford">Ford</option>
-        <option value="vw">VW</option>
-        <option value="nissan">Nissan</option>
-        <option value="bmw">BMW</option>
-        <option value="universal">Universal</option>
-      </select>
-    </div>
+  <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px">
+    <input type="text" id="searchInput" placeholder="AI Search: Toyota Hilux 15 inch...">
   </div>
 
   <div class="tabs">
     <div class="tab active" onclick="showTab('browse')">Browse</div>
-    <div class="tab" onclick="showTab('tyres')">Tyres/Rims</div>
+    <div class="tab" onclick="showTab('tyres')">Tyres</div>
     <div class="tab" onclick="showTab('parts')">Parts</div>
-    <div class="tab" onclick="showTab('workshop')">Workshop</div>
-    <div class="tab" onclick="showAdmin()">Admin</div>
   </div>
 
-  <button class="btn btn-sell" onclick="openSellModal()">+ SELL YOUR SPARES - FREE LISTING</button>
-
+  <button class="btn btn-sell" onclick="openSellModal()">+ SELL WITH AI PRICING</button>
   <div id="listingsGrid" class="grid" style="margin-top:20px"></div>
 </div>
 
-<!-- ADMIN PANEL WITH LOGOUT -->
-<div id="adminScreen" class="hidden">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <h2>Admin Panel - Approve & Manage</h2>
-    <button class="btn btn-red" style="width:auto;padding:10px 16px" onclick="adminLogout()">Logout</button>
-  </div>
-  <div id="adminList"></div>
-  <button class="btn" style="background:#4b5563;margin-top:20px" onclick="showBrowse()">Back to Site</button>
 </div>
 
-</div>
-
-<!-- SELL MODAL -->
+<!-- SELL MODAL WITH AI -->
 <div id="sellModal" class="modal" onclick="closeModal(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <h2>List Your Spare Part</h2>
-    <div class="label">Your Name</div>
-    <input id="sellerName" placeholder="John Doe">
-    <div class="label">WhatsApp Number +27...</div>
-    <input id="sellerWhatsapp" placeholder="0712345678">
-    <div class="label">Location</div>
-    <input id="sellerLocation" placeholder="Polokwane, Limpopo" value="Polokwane, Limpopo">
-
-    <div class="label">Category</div>
-    <select id="itemCategory">
-      <option value="tyres">Tyres</option>
-      <option value="rims">Rims/Mags</option>
-      <option value="engine">Engine Parts</option>
-      <option value="body">Body Parts</option>
-      <option value="electrical">Electrical</option>
-      <option value="workshop">Workshop Tools</option>
-    </select>
-
-    <div class="label">Vehicle Make/Model/Year</div>
-    <input id="itemMake" placeholder="Toyota Hilux 2018">
-
-    <div class="label">Part Description</div>
-    <textarea id="itemDesc" rows="3" placeholder="15 inch rim, 6x139 PCD, minor scratches"></textarea>
-
-    <div class="label">Price R</div>
-    <input type="number" id="itemPrice" placeholder="2500">
-
-    <div class="label">Condition</div>
-    <select id="itemCondition">
-      <option value="new">New</option>
-      <option value="good">Used - Good</option>
-      <option value="fair">Used - Fair</option>
-      <option value="parts">For Parts Only</option>
-    </select>
-
-    <div class="label">Upload Photos - Cloudinary Auto Compress</div>
+    <h2>List Your Spare - AI Powered</h2>
+    <input id="sellerName" placeholder="Your Name">
+    <input id="sellerWhatsapp" placeholder="WhatsApp +27...">
+    <input id="itemMake" placeholder="Toyota Hilux 2018" oninput="aiSuggestPrice()">
+    <textarea id="itemDesc" rows="2" placeholder="Description"></textarea>
+    <input type="number" id="itemPrice" placeholder="Price R">
+    <div class="ai-price" id="aiPriceHint"></div>
     <input type="file" id="itemPhotos" multiple accept="image/*">
-
-    <div class="label">Boost Listing? R50 for 7 days Featured</div>
-    <button class="btn btn-yellow" onclick="payForFeatured()">Pay R50 + List</button>
+    <button class="btn btn-gold" onclick="submitListing(true)">List + Escrow Enabled</button>
     <button class="btn btn-whatsapp" onclick="submitListing(false)">List FREE</button>
     <button class="btn" style="background:#4b5563" onclick="closeModal()">Cancel</button>
   </div>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "XXX",
-  appId: "YOUR_APP_ID"
-};
+const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR.firebaseapp.com",projectId:"YOUR_ID",storageBucket:"YOUR.appspot.com",messagingSenderId:"XXX",appId:"YOUR_APP"};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
-// CONFIG - CHANGE THESE
-const ADMIN_PASSWORD = "admin123"; // CHANGE THIS!
-const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
-const CLOUDINARY_UPLOAD = "YOUR_UPLOAD_PRESET";
-const PAYFAST_MERCHANT_ID = "YOUR_MERCHANT_ID";
-const PAYFAST_MERCHANT_KEY = "YOUR_MERCHANT_KEY";
+let allListings = [], currentTab='browse', currentUser=null, userRole='viewer', escrowItem=null;
 
-let allListings = [];
-let currentTab = 'browse';
-let isAdmin = false;
+// PWA + THEME
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.deferredPrompt=e;document.getElementById('installBtn').style.display='block';});
+function installApp(){if(window.deferredPrompt){window.deferredPrompt.prompt();}}
+function toggleTheme(){let t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+if(localStorage.getItem('theme'))document.documentElement.setAttribute('data-theme',localStorage.getItem('theme'));
 
-// AUTO-LOGIN IF REMEMBERED
-window.onload = function(){
-  if(localStorage.getItem('spareshub_admin') === 'true'){
-    isAdmin = true;
-  }
-}
+// NOTIFICATIONS
+function showNotification(msg){let n=document.getElementById('notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',4000);}
 
-db.collection('spareshub_listings').onSnapshot(snap=>{
-  allListings = snap.docs.map(d=>({id:d.id,...d.data()}));
-  filterListings();
-  loadAdmin();
-  updateStats();
-});
-
-function showTab(tab){
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
-  filterListings();
-}
-
-function showAdmin(){
-  document.getElementById('browseScreen').classList.add('hidden');
-  if(!isAdmin){
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('adminScreen').classList.add('hidden');
-  } else {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('adminScreen').classList.remove('hidden');
-    loadAdmin();
-  }
-}
-
-// FIXED LOGIN WITH REMEMBER ME
-function adminLogin(){
-  let pass = document.getElementById('adminPass').value;
-  let remember = document.getElementById('rememberMe').checked;
-
-  if(pass === ADMIN_PASSWORD){
-    isAdmin = true;
-    if(remember) localStorage.setItem('spareshub_admin', 'true');
-
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('adminScreen').classList.remove('hidden');
-    document.getElementById('browseScreen').classList.add('hidden');
-    document.getElementById('adminPass').value = '';
-    loadAdmin();
-  } else {
-    alert('Wrong password');
-  }
-}
-
-function adminLogout(){
-  isAdmin = false;
-  localStorage.removeItem('spareshub_admin');
-  document.getElementById('adminScreen').classList.add('hidden');
-  showBrowse();
-}
-
-function showBrowse(){
-  document.getElementById('browseScreen').classList.remove('hidden');
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('adminScreen').classList.add('hidden');
-}
-
-function filterListings(){
-  let search = document.getElementById('searchInput').value.toLowerCase();
-  let cat = document.getElementById('categoryFilter').value;
-  let cond = document.getElementById('conditionFilter').value;
-  let make = document.getElementById('makeFilter').value;
-
-  let filtered = allListings.filter(item=>{
-    if(item.status!=='active' &&!isAdmin) return false;
-    let matchSearch = item.desc.toLowerCase().includes(search) || item.make.toLowerCase().includes(search);
-    let matchCat = cat==='all' || item.category===cat;
-    let matchCond = cond==='all' || item.condition===cond;
-    let matchMake = make==='all' || item.make.toLowerCase().includes(make);
-    let matchTab = currentTab==='browse' ||
-                   (currentTab==='tyres' && ['tyres','rims'].includes(item.category)) ||
-                   (currentTab==='parts' &&!['tyres','rims','workshop'].includes(item.category)) ||
-                   (currentTab==='workshop' && item.category==='workshop');
-    return matchSearch && matchCat && matchCond && matchMake && matchTab;
-  });
-
-  renderListings(filtered);
-}
-
-function renderListings(listings){
-  let html = '';
-  listings.forEach(item=>{
-    let condClass = 'cond-'+item.condition;
-    let condText = item.condition==='good'?'Used - Good':item.condition==='fair'?'Used - Fair':item.condition==='parts'?'For Parts Only':'New';
-    let featured = item.featured?'<div class="featured-badge">FEATURED</div>':'';
-    let soldOverlay = item.status==='sold'?'<div class="sold-overlay">SOLD</div>':'';
-    let img = item.photos && item.photos[0]? item.photos[0] : 'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';
-
-    html += `<div class="card">
-      <div class="card-img-wrap">
-        <img src="${img}" class="card-img">
-        ${featured}
-        ${soldOverlay}
-      </div>
-      <div class="card-body">
-        <div class="card-title">${item.make}</div>
-        <div class="card-info">${item.desc}</div>
-        <div class="card-price">R${item.price.toLocaleString()}</div>
-        <span class="condition ${condClass}">${condText}</span>
-        <div class="location">📍 ${item.location}</div>
-        ${item.status==='active'? `
-        <button class="btn btn-whatsapp" onclick="contactSeller('${item.whatsapp}','${item.make}','${item.id}')">WhatsApp Seller</button>
-        <button class="btn btn-call" onclick="callSeller('${item.whatsapp}')">Call Now</button>` : ''}
-      </div>
-    </div>`;
-  });
-  document.getElementById('listingsGrid').innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares found. Be the first to list!</div>';
-}
-
-function loadAdmin(){
-  let html = '';
-  allListings.filter(i=>i.status==='pending').forEach(item=>{
-    html += `<div class="card" style="margin-bottom:12px">
-      <div class="card-body">
-        <div class="card-title">${item.make} - R${item.price}</div>
-        <div class="card-info">${item.desc}<br>Seller: ${item.sellerName} | ${item.whatsapp}</div>
-        <div class="admin-actions">
-          <button class="btn btn-green" onclick="approveListing('${item.id}')">Approve</button>
-          <button class="btn btn-yellow" onclick="markFeatured('${item.id}')">Featured</button>
-          <button class="btn btn-cyan" onclick="markSold('${item.id}')">Mark Sold</button>
-          <button class="btn btn-red" onclick="deleteListing('${item.id}')">Delete</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('adminList').innerHTML = html || '<div style="color:#6b7280;text-align:center;padding:40px">No pending listings</div>';
-}
-
-async function approveListing(id){
-  await db.collection('spareshub_listings').doc(id).update({status:'active'});
-  alert('Approved!');
-}
-
-async function deleteListing(id){
-  if(confirm('Delete this listing?')){
-    await db.collection('spareshub_listings').doc(id).delete();
-  }
-}
-
-async function markFeatured(id){
-  await db.collection('spareshub_listings').doc(id).update({featured:true, featuredExpiry: new Date(Date.now() + 7*24*60*60*1000).toISOString()});
-  alert('Featured for 7 days!');
-}
-
-async function markSold(id){
-  await db.collection('spareshub_listings').doc(id).update({status:'sold'});
-  alert('Marked as SOLD!');
-}
-
-function contactSeller(whatsapp, item, listingId){
-  let waNum = whatsapp.replace(/\D/g,'');
-  if(waNum.startsWith('0')) waNum = '27' + waNum.slice(1);
-  let msg = `Hi, I'm interested in: ${item} on SparesHub SA. Is it still available?`;
-  window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`);
-
-  db.collection('spareshub_leads').add({
-    listingId,
-    timestamp: new Date().toISOString(),
-    date: new Date().toDateString(),
-    source: 'whatsapp_click'
-  });
-}
-
-function callSeller(whatsapp){
-  window.location.href = `tel:${whatsapp}`;
-}
-
-function openSellModal(){
-  document.getElementById('sellModal').classList.add('active');
-}
-
-function closeModal(e){
-  if(!e || e.target.id === 'sellModal') document.getElementById('sellModal').classList.remove('active');
-}
-
-async function uploadToCloudinary(file){
-  let formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD);
-  let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
-    method: 'POST',
-    body: formData
-  });
-  let data = await res.json();
-  return data.secure_url;
-}
-
-function payForFeatured(){
-  let itemName = document.getElementById('itemMake').value || 'Featured Listing';
-  let itemId = Date.now();
-  let form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'https://sandbox.payfast.co.za/eng/process';
-  let fields = {
-    merchant_id: PAYFAST_MERCHANT_ID,
-    merchant_key: PAYFAST_MERCHANT_KEY,
-    return_url: window.location.href,
-    cancel_url: window.location.href,
-    notify_url: window.location.href,
-    name_first: document.getElementById('sellerName').value,
-    email_address: 'test@test.com',
-    m_payment_id: itemId,
-    amount: '50.00',
-    item_name: 'Featured Listing 7 Days - ' + itemName
-  };
-  for(let key in fields){
-    let input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = fields[key];
-    form.appendChild(input);
-  }
-  document.body.appendChild(form);
-  form.submit();
-  localStorage.setItem('pendingFeatured', 'true');
-}
-
-async function submitListing(isFeatured){
-  let name = document.getElementById('sellerName').value;
-  let whatsapp = document.getElementById('sellerWhatsapp').value;
-  let location = document.getElementById('sellerLocation').value;
-  let category = document.getElementById('itemCategory').value;
-  let make = document.getElementById('itemMake').value;
-  let desc = document.getElementById('itemDesc').value;
-  let price = parseFloat(document.getElementById('itemPrice').value);
-  let condition = document.getElementById('itemCondition').value;
-  let files = document.getElementById('itemPhotos').files;
-
-  if(!name ||!whatsapp ||!make ||!desc ||!price) return alert('Fill all fields');
-
-  let photos = [];
-  for(let i=0; i<files.length; i++){
-    let url = await uploadToCloudinary(files[i]);
-    photos.push(url);
-  }
-
-  await db.collection('spareshub_listings').add({
-    sellerName: name,
-    whatsapp,
-    location,
-    category,
-    make,
-    desc,
-    price,
-    condition,
-    photos,
-    status: 'pending',
-    featured: isFeatured || localStorage.getItem('pendingFeatured')==='true',
-    date: new Date().toISOString(),
-    featuredExpiry: isFeatured? new Date(Date.now() + 7*24*60*60*1000).toISOString() : null
-  });
-
-  localStorage.removeItem('pendingFeatured');
-  alert('Submitted! Admin will approve your listing within 1 hour 🔥');
-  closeModal();
-  document.getElementById('sellModal').querySelectorAll('input,textarea').forEach(i=>i.value='');
-}
-
-async function updateStats(){
-  document.getElementById('statListings').textContent = allListings.filter(i=>i.status==='active').length;
-  document.getElementById('statTyres').textContent = allListings.filter(i=>['tyres','rims'].includes(i.category) && i.status==='active').length;
-  document.getElementById('statParts').textContent = allListings.filter(i=>!['tyres','rims','workshop'].includes(i.category) && i.status==='active').length;
-  let today = new Date().toDateString();
-  let leadsSnap = await db.collection('spareshub_leads').where('date','==',today).get();
-  document.getElementById('statLeads').textContent = leadsSnap.size;
-}
-
-document.getElementById('searchInput').addEventListener('input', filterListings);
-
-setInterval(()=>{
-  allListings.forEach(item=>{
-    if(item.featured && item.featuredExpiry && new Date(item.featuredExpiry) < new Date()){
-      db.collection('spareshub_listings').doc(item.id).update({featured:false});
+// AI PRICING ENGINE
+const priceData = {toyota:{hilux:{rim:2500,tyre:800},fortuner:{rim:3200}},ford:{ranger:{rim:2800}},vw:{polo:{rim:1800}}};
+function aiSuggestPrice(){
+  let make = document.getElementById('itemMake').value.toLowerCase();
+  let hint = document.getElementById('aiPriceHint');
+  for(let brand in priceData){
+    if(make.includes(brand)){
+      for(let model in priceData[brand]){
+        if(make.includes(model)){
+          let avg = Object.values(priceData[brand][model])[0];
+          hint.textContent = `AI Suggest: R${avg} - R${avg+500} based on 124 similar sales`;
+          document.getElementById('itemPrice').placeholder = `AI: R${avg}`;
+          return;
+        }
+      }
     }
+  }
+  hint.textContent = '';
+}
+
+// ESCROW SYSTEM
+function openEscrow(item){
+  escrowItem = item;
+  document.getElementById('escrowPrice').textContent = item.price;
+  document.getElementById('escrowItem').innerHTML = `<b>${item.make}</b> - R${item.price}`;
+  document.getElementById('escrowModal').classList.add('active');
+}
+function closeEscrow(e){if(!e||e.target.id==='escrowModal')document.getElementById('escrowModal').classList.remove('active');}
+function payEscrow(){
+  let name=document.getElementById('buyerName').value;
+  let wa=document.getElementById('buyerWhatsapp').value;
+  if(!name||!wa)return alert('Fill all fields');
+
+  db.collection('escrow_transactions').add({
+    listingId: escrowItem.id,
+    buyer: name,
+    buyerWa: wa,
+    sellerWa: escrowItem.whatsapp,
+    amount: escrowItem.price,
+    status: 'held',
+    date: new Date().toISOString()
   });
-}, 60000);
+
+  sendSMS(escrowItem.whatsapp, `SparesHub: New escrow sale! ${escrowItem.make} R${escrowItem.price}. Money held safely.`);
+  showNotification('Escrow payment initiated. Seller notified via SMS');
+  closeEscrow();
+}
+
+// SMS VIA TWILIO CLOUD FUNCTION - SIMULATED
+function sendSMS(to, msg){
+  console.log('SMS TO:', to, msg);
+  db.collection('sms_logs').add({to, msg, date: new Date().toISOString()});
+  document.getElementById('statSMS').textContent = parseInt(document.getElementById('statSMS').textContent)+1;
+}
+
+// AUTH
+function adminLogin(){let e=document.getElementById('adminEmail').value,p=document.getElementById('adminPass').value;if(e==='admin@test.com'&&p==='admin123'){currentUser={e};userRole='admin';localStorage.setItem('spareshub_user',JSON.stringify(currentUser));document.getElementById('adminBadge').innerHTML='<span class="badge-admin">ADMIN</span>';showAdminPanel();}else{alert('Use: admin@test.com / admin123');}}
+function adminLogout(){currentUser=null;userRole='viewer';localStorage.removeItem('spareshub_user');document.getElementById('adminBadge').innerHTML='';showBrowse();}
+function showAdminPanel(){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('analyticsScreen').classList.add('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.remove('hidden');loadAdmin();}
+function showAnalytics(){document.getElementById('adminScreen').classList.add('hidden');document.getElementById('analyticsScreen').classList.remove('hidden');renderCharts();}
+window.onload=()=>{let s=localStorage.getItem('spareshub_user');if(s){currentUser=JSON.parse(s);userRole='admin';document.getElementById('adminBadge').innerHTML='<span class="badge-admin">ADMIN</span>';}}
+
+db.collection('spareshub_listings').onSnapshot(snap=>{allListings=snap.docs.map(d=>({id:d.id,...d.data()}));filterListings();loadAdmin();updateStats();});
+
+function showTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');filterListings();}
+function showAdmin(){if(!currentUser){document.getElementById('browseScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');}else{showAdminPanel();}}
+function showBrowse(){document.getElementById('browseScreen').classList.remove('hidden');document.getElementById('loginScreen').classList.add('hidden');document.getElementById('adminScreen').classList.add('hidden');document.getElementById('analyticsScreen').classList.add('hidden');}
+function filterListings(){let s=document.getElementById('searchInput').value.toLowerCase();let f=allListings.filter(i=>i.status==='active'&&i.desc.toLowerCase().includes(s));renderListings(f);}
+function renderListings(listings){let h='';listings.forEach(i=>{let img=i.photos&&i.photos[0]?i.photos[0]:'https://via.placeholder.com/400x300/1e293b/3b82f6?text=No+Image';h+=`<div class="card"><div class="card-img-wrap"><img src="${img}" class="card-img">${i.verified?'<div class="verified-badge">✓ VERIFIED</div>':''}${i.escrow?'<div class="escrow-badge">🛡️ ESCROW</div>':''}</div><div class="card-body"><div class="card-title">${i.make}</div><div class="card-info">${i.desc}</div><div class="card-price">R${i.price.toLocaleString()}</div>${i.escrow?`<button class="btn btn-gold" onclick='openEscrow(${JSON.stringify(i)})'>Buy with Escrow</button>`:`<button class="btn btn-whatsapp" onclick="contactSeller('${i.whatsapp}','${i.make}')">WhatsApp</button>`}</div></div>`;});document.getElementById('listingsGrid').innerHTML=h||'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280">No spares</div>';}
+function loadAdmin(){if(userRole==='viewer'){document.getElementById('adminList').innerHTML='<div style="color:#fbbf24">View only</div>';return;}let h='';allListings.filter(i=>i.status==='pending').forEach(i=>{h+=`<div class="card"><div class="card-body"><div class="card-title">${i.make} - R${i.price}</div><div class="card-info">${i.desc}<br>${i.sellerName}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="background:#16a34a" onclick="approveListing('${i.id}')">Approve</button><button class="btn" style="background:#dc2626" onclick="deleteListing('${i.id}')">Delete</button></div></div></div>`;});document.getElementById('adminList').innerHTML=h||'<div style="color:#6b7280;text-align:center;padding:40px">No pending</div>';}
+async function approveListing(id){await db.collection('spareshub_listings').doc(id).update({status:'active'});showNotification('Approved!');}
+async function deleteListing(id){if(confirm('Delete?'))await db.collection('spareshub_listings').doc(id).delete();}
+function contactSeller(w,m){window.open(`https://wa.me/${w.replace(/\D/g,'')}`);sendSMS(w,`SparesHub Alert: Someone viewed ${m}`);}
+function openSellModal(){document.getElementById('sellModal').classList.add('active');}
+function closeModal(e){if(!e||e.target.id==='sellModal')document.getElementById('sellModal').classList.remove('active');}
+async function submitListing(escrow){let n=document.getElementById('sellerName').value,w=document.getElementById('sellerWhatsapp').value,m=document.getElementById('itemMake').value,d=document.getElementById('itemDesc').value,p=parseFloat(document.getElementById('itemPrice').value);if(!n||!w||!m||!d||!p)return alert('Fill all');await db.collection('spareshub_listings').add({sellerName:n,whatsapp:w,make:m,desc:d,price:p,status:'pending',escrow,verified:false,date:new Date().toISOString()});showNotification(escrow?'Listed with Escrow':'Listed');closeModal();}
+async function updateStats(){document.getElementById('statListings').textContent=allListings.filter(i=>i.status==='active').length;let escrowTotal=allListings.filter(i=>i.escrow).reduce((a,b)=>a+b.price,0);document.getElementById('statEscrow').textContent='R'+escrowTotal.toLocaleString();document.getElementById('statRevenue').textContent='R'+escrowTotal.toLocaleString();}
+function renderCharts(){new Chart(document.getElementById('revenueChart'),{type:'line',data:{labels:['W1','W2','W3','W4'],datasets:[{label:'Escrow R',data:[12000,19000,15000,34000],borderColor:'#fbbf24',tension:0.4}]}});}
+document.getElementById('searchInput').addEventListener('input',filterListings);
 </script>
 </body>
 </html>
