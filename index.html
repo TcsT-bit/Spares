@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#dc2626">
-<title>SparesHub OMEGA v12.4 GOD MODE DTC READ</title>
+<title>SparesHub OMEGA v12.5.1 GOD MODE LIVE</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -51,7 +51,7 @@ input:read-only{background:#1f2937;color:#6b7280}
 .hidden{display:none!important}
 #qrReader,#dviCanvas{width:100%;max-width:400px;margin:10px auto;border-radius:12px;overflow:hidden;background:#000}
 .error-text{color:#f87171;font-size:12px;margin-top:-8px;margin-bottom:8px}
-.demo-badge{position:fixed;bottom:10px;right:10px;background:#f59e0b;color:#000;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800}
+.demo-badge{position:fixed;bottom:10px;right:10px;background:var(--red);color:#fff;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800}
 .kiosk-btn{height:120px;font-size:18px}
 .table{width:100%;font-size:12px;border-collapse:collapse}
 .table th,.table td{padding:8px;text-align:left;border-bottom:1px solid #1f2937}
@@ -71,7 +71,7 @@ input:read-only{background:#1f2937;color:#6b7280}
 <body>
 
 <div class="header">
-  <h1>⚡ OMEGA v12.4 <span class="role-badge" id="roleBadge">VIEWER</span></h1>
+  <h1>⚡ OMEGA v12.5.1 <span class="role-badge" id="roleBadge">VIEWER</span></h1>
   <div>
     <button class="icon-btn" onclick="toggleTheme()">🌓</button>
     <button class="icon-btn" onclick="startRemote()">🌐</button>
@@ -156,20 +156,20 @@ input:read-only{background:#1f2937;color:#6b7280}
   </div>
 
   <div id="tab-j2534" class="hidden">
-    <h3>J2534 Pass-Thru + Flash</h3>
-    <div class="perm-note">Admin Only</div>
+    <h3>J2534 Pass-Thru + Flash - SIM ONLY</h3>
+    <div class="perm-note">Browser cannot flash ECUs. Admin view only.</div>
     <div class="row">
       <select id="j2534Module"><option>ECM</option><option>TCM</option><option>BCM</option></select>
       <select id="j2534Action"><option>Read ECU ID</option><option>Flash Firmware</option></select>
     </div>
     <input id="j2534File" type="file" accept=".bin,.odx">
     <div class="progress-bar"><div class="progress-fill" id="flashProgress"></div></div>
-    <button class="btn btn-red" onclick="startJ2534()">Start</button>
+    <button class="btn btn-red" onclick="startJ2534()">Start SIM</button>
     <div class="log-box" id="j2534Log"></div>
   </div>
 
   <div id="tab-adas" class="hidden">
-    <h3>ADAS Calibration</h3>
+    <h3>ADAS Calibration - SIM</h3>
     <div class="row">
       <select id="adasType"><option>Front Camera</option><option>Radar</option></select>
       <select id="adasMode"><option>Static</option><option>Dynamic</option></select>
@@ -183,7 +183,7 @@ input:read-only{background:#1f2937;color:#6b7280}
   </div>
 
   <div id="tab-keys" class="hidden">
-    <h3>Key Programming</h3>
+    <h3>Key Programming - SIM</h3>
     <input id="keyPIN" placeholder="4-Digit PIN">
     <button class="btn btn-red" onclick="programKey()">PROGRAM KEY</button>
     <div id="keyStatus" class="card">Keys: 2/4</div>
@@ -256,7 +256,7 @@ const firebaseConfig = {
     measurementId: "G-3C6DQ3NLCX"
   };
 let db, DEMO_MODE = false, CURRENT_ROLE = 'viewer';
-try{if(firebaseConfig.apiKey === "YOUR_API_KEY") throw "Demo";firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){DEMO_MODE=true;document.getElementById('demoMode').classList.remove('hidden');}
+try{firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){DEMO_MODE=true;document.getElementById('demoMode').classList.remove('hidden');console.error(e);}
 
 let allJobs=[],allInventory=[],currentVINData=null,qrScanner=null,obdDevice=null,obdServer=null,liveData={},chart=null,obdInterval=null,keysProgrammed=0;
 let obdPort=null, obdReader=null, obdWriter=null, obdDeviceId=null;
@@ -264,7 +264,6 @@ let obdPort=null, obdReader=null, obdWriter=null, obdDeviceId=null;
 const DTC_DB = {'P0301':{desc:'Cylinder 1 Misfire',fix:'Swap coil 82%',hours:1.2,parts:850},'P0420':{desc:'Cat Low',fix:'Replace cat 91%',hours:2.5,parts:4200},'U0100':{desc:'CAN Lost',fix:'Wiring 78%'},'B0001':{desc:'Airbag',fix:'Clock spring'}};
 const PCD_DB = {'Toyota Hilux': '6x139.7','Ford Ranger': '6x139.7','VW Polo': '5x100'};
 const AI_PRICING = {'bumper':{parts:1800,labour:2.5},'brake pads':{parts:850,labour:1.2}};
-const DEMO_VINS = {'1FTFW1E5XKF':{Make:'Ford',Model:'Ranger',ModelYear:'2019'}};
 
 const ROLE_PERMS = {
   admin:{name:'ADMIN',color:'var(--gold)',tabs:['dashboard','diag','dtc','j2534','adas','keys','dvi','remote','jobcards','inventory','kiosk','reports'],create:true,price:true,export:true,inv:true,dvi:true,j2534:true,adas:true,keys:true,diag:true},
@@ -275,241 +274,142 @@ const ROLE_PERMS = {
 
 function showNotification(msg,type='ok'){let n=document.getElementById('notification');n.textContent=msg;n.style.background=type==='err'?'var(--red)':'var(--green)';n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
 function toggleTheme(){let t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);}
-function login(){let role=document.getElementById('loginRole').value;CURRENT_ROLE=role;let p=ROLE_PERMS[role];document.getElementById('roleBadge').textContent=p.name;document.getElementById('roleBadge').style.background=p.color;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appScreen').classList.remove('hidden');applyRBAC();loadJobs();loadInventory();updateStats();}
+async function login(){let role=document.getElementById('loginRole').value;CURRENT_ROLE=role;let p=ROLE_PERMS[role];document.getElementById('roleBadge').textContent=p.name;document.getElementById('roleBadge').style.background=p.color;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appScreen').classList.remove('hidden');applyRBAC();await loadJobs();await loadInventory();updateStats();}
 function logout(){stopOBD();CURRENT_ROLE='viewer';document.getElementById('appScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');}
 function applyRBAC(){let p=ROLE_PERMS[CURRENT_ROLE];document.querySelectorAll('.tab').forEach(tab=>{tab.classList.toggle('hidden',!p.tabs.includes(tab.dataset.tab));});document.getElementById('btnNewJob').disabled=!p.create;document.getElementById('btnAI').disabled=!p.price;document.getElementById('btnConnect').disabled=!p.diag;document.getElementById('btnAddStock').disabled=!p.inv;document.getElementById('btnScan').disabled=!p.inv;document.getElementById('btnXero').disabled=!p.export;document.getElementById('btnSage').disabled=!p.export;document.getElementById('btnScanVIN').disabled=!p.create;document.getElementById('btnAIEst').disabled=!p.price;document.getElementById('partsPrice').readOnly=!p.price;document.getElementById('labourPrice').readOnly=!p.price;document.getElementById('priceNote').textContent=!p.price?'Read Only':'';document.getElementById('modalRole').textContent=p.name;showTab(p.tabs[0],{target:document.querySelector(`[data-tab="${p.tabs[0]}"]`)});}
 function showTab(tab,e){if(!ROLE_PERMS[CURRENT_ROLE].tabs.includes(tab))return showNotification('Access Denied','err');document.querySelectorAll('[id^=tab-]').forEach(x=>x.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(e) e.target.classList.add('active');if(tab==='diag')initChart();if(tab==='jobcards')renderKanban();if(tab==='inventory')renderInventory();if(tab==='reports')renderReports();}
 
-// ===== GOD MODE v12.4 REAL OBD2 + DTC READ START =====
-async function connectOBD2(){
-  if(!ROLE_PERMS[CURRENT_ROLE].diag)return showNotification('No permission','err');
-  if(!navigator.bluetooth){return showNotification('Use Chrome Android', 'err');}
-  
+// ===== OBD2 REAL CODE UNCHANGED =====
+async function connectOBD2(){if(!ROLE_PERMS[CURRENT_ROLE].diag)return showNotification('No permission','err');if(!navigator.bluetooth){return showNotification('Use Chrome Android', 'err');}
+try{document.getElementById('connStatus').textContent='Requesting...';obdDeviceId = await navigator.bluetooth.requestDevice({filters:[{namePrefix:'OBD'},{namePrefix:'ELM'},{namePrefix:'V-LINK'}],optionalServices:['00001101-0000-1000-8000-00805f9b34fb']});
+let server = await obdDeviceId.gatt.connect();let service = await server.getPrimaryService('00001101-0000-1000-8000-00805f9b34fb');obdWriter = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');obdReader = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
+await sendAT('ATZ'); await new Promise(r=>setTimeout(r,1000));await sendAT('ATE0'); await sendAT('ATL0'); await sendAT('ATSP0');
+document.getElementById('connStatus').textContent='Connected REAL';showNotification('ELM327 Connected ✓');pollOBD2(); obdDeviceId.addEventListener('gattserverdisconnected', stopOBD);}
+catch(e){console.error(e);document.getElementById('connStatus').textContent='Failed';showNotification('Connect Failed: '+e.message,'err');}}
+function stopOBD(){if(obdDeviceId && obdDeviceId.gatt.connected){obdDeviceId.gatt.disconnect();}if(obdInterval)clearInterval(obdInterval);obdInterval=null;document.getElementById('connStatus').textContent='Disconnected';['rpm','coolant','speed','maf','o2','ltft'].forEach(id=>document.getElementById(id).textContent=id==='coolant'?'0°':id==='ltft'?'0%':'0');showNotification('OBD2 Disconnected');}
+async function sendAT(cmd){await obdWriter.writeValue(new TextEncoder().encode(cmd+'\r'));return await readOBDReply();}
+async function sendOBD(cmd){await obdWriter.writeValue(new TextEncoder().encode(cmd+'\r'));return await readOBDReply();}
+async function readOBDReply(){return new Promise(resolve=>{let buffer='';let handler = e=>{buffer += new TextDecoder().decode(e.target.value);if(buffer.includes('>')){obdReader.removeEventListener('characteristicvaluechanged', handler);resolve(buffer.replace(/\r|\n|>/g,'').trim());}};
+obdReader.startNotifications().then(()=>{obdReader.addEventListener('characteristicvaluechanged', handler);setTimeout(()=>{obdReader.removeEventListener('characteristicvaluechanged', handler);resolve(buffer);},500);});}
+function parseOBD(reply, pid){if(!reply || reply.includes('NO DATA') || reply.includes('ERROR')) return null;let hex = reply.replace(/\s/g,'').match(new RegExp(`41${pid}([0-9A-F]{2,})`,'i'));if(!hex) return null;let data = hex[1];
+switch(pid){case'0C': return Math.floor((parseInt(data.substring(0,2),16)*256 + parseInt(data.substring(2,4),16))/4);case'05': return parseInt(data,16)-40;case'0D': return parseInt(data,16);case'10': return (parseInt(data.substring(0,2),16)*256 + parseInt(data.substring(2,4),16))/100;case'14': return (parseInt(data.substring(0,2),16)/200).toFixed(2);case'07': return ((parseInt(data,16)-128)*100/128).toFixed(1);default: return null;}}
+function parseDTC(hexStr){let codes=[];hexStr = hexStr.replace(/\s/g,'').match(/43([0-9A-F]{4})+/i);if(!hexStr) return codes;let data = hexStr[0].substring(2);
+for(let i=0;i<data.length;i+=4){let chunk = data.substring(i,i+4);if(chunk==='0000') break;let b1 = parseInt(chunk.substring(0,2),16);let b2 = parseInt(chunk.substring(2,4),16);let type = ['P','C','B','U'][b1>>6];let d1 = ((b1&0x30)>>4).toString();let d2 = (b1&0x0F).toString(16).toUpperCase();let d3 = (b2>>4).toString(16).toUpperCase();let d4 = (b2&0x0F).toString(16).toUpperCase();codes.push(`${type}${d1}${d2}${d3}${d4}`);}return codes;}
+async function readDTC(){if(!obdWriter)return showNotification('Connect OBD2 first','err');let reply = await sendOBD('03');let codes = parseDTC(reply);if(codes.length===0){document.getElementById('dtcResult').innerHTML=`<div class="dtc-card">No Codes Stored ✓</div>`;return;}
+let html = codes.map(c=>{let d = DTC_DB[c]||{desc:'Unknown Code',fix:'Check WSM'};return `<div class="dtc-card"><b>${c}</b><br>${d.desc}<br>Fix: ${d.fix} | Parts: R${d.parts||0}</div>`;}).join('');document.getElementById('dtcResult').innerHTML = html;showNotification(`${codes.length} Code(s) Found`);}
+async function clearDTC(){if(!obdWriter)return showNotification('Connect OBD2 first','err');await sendOBD('04');document.getElementById('dtcResult').innerHTML=`<div class="dtc-card" style="border-color:var(--green)">Codes Cleared ✓</div>`;showNotification('DTC Cleared');}
+async function pollOBD2(){if(obdInterval)clearInterval(obdInterval);obdInterval = setInterval(async()=>{try{let rpmHex = await sendOBD('010C');let coolHex = await sendOBD('0105');let speedHex = await sendOBD('010D');let mafHex = await sendOBD('0110');let o2Hex = await sendOBD('0114');let ltftHex = await sendOBD('0107');
+let rpm = parseOBD(rpmHex,'0C');let coolant = parseOBD(coolHex,'05');let speed = parseOBD(speedHex,'0D');let maf = parseOBD(mafHex,'10');let o2 = parseOBD(o2Hex,'14');let ltft = parseOBD(ltftHex,'07');
+if(rpm!=null)document.getElementById('rpm').textContent = rpm;if(coolant!=null)document.getElementById('coolant').textContent = coolant+'°';if(speed!=null)document.getElementById('speed').textContent = speed;if(maf!=null)document.getElementById('maf').textContent = maf;if(o2!=null)document.getElementById('o2').textContent = o2;if(ltft!=null)document.getElementById('ltft').textContent = ltft+'%';
+if(rpm!=null)updateChart(rpm);
+}catch(e){console.log('OBD Poll Err', e);}}
+  },1200);}
+
+let chartData = {labels:[], datasets:[{label:'RPM', data:[], borderColor:'#60a5fa', tension:0.3}]};
+function initChart(){if(chart)chart.destroy();chart=new Chart(document.getElementById('liveChart'),{type:'line',data:chartData,options:{animation:false,scales:{x:{display:false},y:{beginAtZero:true}}}});}
+function updateChart(rpm){if(!chart) return;chartData.labels.push('');chartData.datasets[0].data.push(rpm);if(chartData.labels.length>20){chartData.labels.shift();chartData.datasets[0].data.shift();}chart.update();}
+
+// ===== FIREBASE CLOUD MODE - NO LOCALSTORAGE =====
+async function loadJobs(){
+  if(DEMO_MODE) return showNotification('DEMO MODE: Firebase Failed', 'err');
   try{
-    document.getElementById('connStatus').textContent='Requesting...';
-    obdDeviceId = await navigator.bluetooth.requestDevice({
-      filters:[{namePrefix:'OBD'},{namePrefix:'ELM'},{namePrefix:'V-LINK'}],
-      optionalServices:['00001101-0000-1000-8000-00805f9b34fb']
-    });
-    
-    let server = await obdDeviceId.gatt.connect();
-    let service = await server.getPrimaryService('00001101-0000-1000-8000-00805f9b34fb');
-    obdWriter = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
-    obdReader = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
-    
-    await sendAT('ATZ'); await new Promise(r=>setTimeout(r,1000));
-    await sendAT('ATE0'); await sendAT('ATL0'); await sendAT('ATSP0');
-
-    document.getElementById('connStatus').textContent='Connected REAL';
-    showNotification('ELM327 Connected ✓');
-    pollOBD2(); 
-    obdDeviceId.addEventListener('gattserverdisconnected', stopOBD);
-
-  }catch(e){
-    console.error(e);
-    document.getElementById('connStatus').textContent='Failed';
-    showNotification('Connect Failed: '+e.message,'err');
-  }
+    let snap = await db.collection('jobs').orderBy('createdAt','desc').limit(100).get();
+    allJobs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderKanban();renderDashboard();updateStats();
+  }catch(e){console.error(e);showNotification('Firebase Load Failed','err');}
+} // <-- THIS WAS MISSING
+async function loadInventory(){
+  if(DEMO_MODE) return;
+  try{
+    let snap = await db.collection('inventory').get();
+    allInventory = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(allInventory.length===0){ // seed 1 item if empty
+      await db.collection('inventory').add({sku:"BRK001",name:"Brake Pads",qty:3,min:5,price:850});
+      return loadInventory();
+    }
+    renderInventory();
+  }catch(e){console.error(e);}
 }
+// ===== FIREBASE END =====
 
-function stopOBD(){
-  if(obdDeviceId && obdDeviceId.gatt.connected){obdDeviceId.gatt.disconnect();}
-  if(obdInterval)clearInterval(obdInterval);
-  obdInterval=null;
-  document.getElementById('connStatus').textContent='Disconnected';
-  ['rpm','coolant','speed','maf','o2','ltft'].forEach(id=>document.getElementById(id).textContent=id==='coolant'?'0°':id==='ltft'?'0%':'0');
-  showNotification('OBD2 Disconnected');
-}
+function lookupDTC(){let code=document.getElementById('dtcInput').value.toUpperCase();let d=DTC_DB[code]||{desc:'Unknown Code',fix:'Check WSM'};document.getElementById('dtcResult').innerHTML=`<div class="dtc-card"><b>${code}</b><br>${d.desc}<br>Fix: ${d.fix} | Parts: R${d.parts||0}</div>`;}
 
-async function sendAT(cmd){
-  await obdWriter.writeValue(new TextEncoder().encode(cmd+'\r'));
-  return await readOBDReply();
-}
+function logJ2534(msg){document.getElementById('j2534Log').innerHTML+=`[${new Date().toLocaleTimeString()}] ${msg}<br>`;document.getElementById('j2534Log').scrollTop=9999;}
+async function startJ2534(){if(!ROLE_PERMS[CURRENT_ROLE].j2534)return showNotification('Admin only','err');let progress=0;logJ2534('SIM Start');let int=setInterval(()=>{progress+=10;document.getElementById('flashProgress').style.width=progress+'%';logJ2534(`SIM Flash: ${progress}%`);if(progress>=100){clearInterval(int);logJ2534('SIM Complete ✓');}},800);}
 
-async function sendOBD(cmd){
-  await obdWriter.writeValue(new TextEncoder().encode(cmd+'\r'));
-  return await readOBDReply();
-}
+async function startADAS(step){if(!ROLE_PERMS[CURRENT_ROLE].adas)return showNotification('No permission','err');let type=document.getElementById('adasType').value;if(step==='prep'){document.getElementById('adasStatus').innerHTML='Prepped ✓';}if(step==='cal'){document.getElementById('adasStatus').innerHTML='Calibrating...';setTimeout(()=>{document.getElementById('adasStatus').innerHTML='SIM Success ✓';},2000);}if(step==='cert'){new jsPDF().text(`ADAS SIM PASSED\n${type}\n${new Date().toLocaleDateString()}`,20,20).save('ADAS_Cert.pdf');showNotification('PDF Downloaded');}}
 
-async function readOBDReply(){
-  return new Promise(resolve=>{
-    let buffer='';
-    let handler = e=>{
-      buffer += new TextDecoder().decode(e.target.value);
-      if(buffer.includes('>')){
-        obdReader.removeEventListener('characteristicvaluechanged', handler);
-        resolve(buffer.replace(/\r|\n|>/g,'').trim());
-      }
-    };
-    obdReader.startNotifications().then(()=>{
-      obdReader.addEventListener('characteristicvaluechanged', handler);
-      setTimeout(()=>{obdReader.removeEventListener('characteristicvaluechanged', handler);resolve(buffer);},500);
-    });
-  });
-}
-
-function parseOBD(reply, pid){
-  if(!reply || reply.includes('NO DATA') || reply.includes('ERROR')) return null;
-  let hex = reply.replace(/\s/g,'').match(new RegExp(`41${pid}([0-9A-F]{2,})`,'i'));
-  if(!hex) return null;
-  let data = hex[1];
-  switch(pid){
-    case'0C': return Math.floor((parseInt(data.substring(0,2),16)*256 + parseInt(data.substring(2,4),16))/4);
-    case'05': return parseInt(data,16)-40;
-    case'0D': return parseInt(data,16);
-    case'10': return (parseInt(data.substring(0,2),16)*256 + parseInt(data.substring(2,4),16))/100;
-    case'14': return (parseInt(data.substring(0,2),16)/200).toFixed(2);
-    case'07': return ((parseInt(data,16)-128)*100/128).toFixed(1);
-    default: return null;
-  }
-}
-
-function parseDTC(hexStr){
-  let codes=[];
-  hexStr = hexStr.replace(/\s/g,'').match(/43([0-9A-F]{4})+/i);
-  if(!hexStr) return codes;
-  let data = hexStr[0].substring(2);
-  for(let i=0;i<data.length;i+=4){
-    let chunk = data.substring(i,i+4);
-    if(chunk==='0000') break;
-    let b1 = parseInt(chunk.substring(0,2),16);
-    let b2 = parseInt(chunk.substring(2,4),16);
-    let type = ['P','C','B','U'][b1>>6];
-    let d1 = ((b1&0x30)>>4).toString();
-    let d2 = (b1&0x0F).toString(16).toUpperCase();
-    let d3 = (b2>>4).toString(16).toUpperCase();
-    let d4 = (b2&0x0F).toString(16).toUpperCase();
-    codes.push(`${type}${d1}${d2}${d3}${d4}`);
-  }
-  return codes;
-}
-
-async function readDTC(){
-  if(!obdWriter)return showNotification('Connect OBD2 first','err');
-  let reply = await sendOBD('03'); // Mode 03 = Read DTC
-  let codes = parseDTC(reply);
-  if(codes.length===0){document.getElementById('dtcResult').innerHTML=`<div class="dtc-card">No Codes Stored ✓</div>`;return;}
-  
-  let html = codes.map(c=>{
-    let d = DTC_DB[c]||{desc:'Unknown Code',fix:'Check WSM'};
-    return `<div class="dtc-card"><b>${c}</b><br>${d.desc}<br>Fix: ${d.fix} | Parts: R${d.parts||0}</div>`;
-  }).join('');
-  document.getElementById('dtcResult').innerHTML = html;
-  showNotification(`${codes.length} Code(s) Found`);
-}
-
-async function clearDTC(){
-  if(!obdWriter)return showNotification('Connect OBD2 first','err');
-  await sendOBD('04'); // Mode 04 = Clear DTC
-  document.getElementById('dtcResult').innerHTML=`<div class="dtc-card" style="border-color:var(--green)">Codes Cleared ✓</div>`;
-  showNotification('DTC Cleared');
-}
-
-async function pollOBD2(){
-  if(obdInterval)clearInterval(obdInterval);
-  obdInterval = setInterval(async()=>{
-    try{
-      let rpmHex = await sendOBD('010C');
-      let coolHex = await sendOBD('0105');
-      let speedHex = await sendOBD('010D');
-      let mafHex = await sendOBD('0110');
-      let o2Hex = await sendOBD('0114');
-      let ltftHex = await sendOBD('0107');
-      
-      let rpm = parseOBD(rpmHex,'0C');
-      let coolant = parseOBD(coolHex,'05');
-      let speed = parseOBD(speedHex,'0D');
-      let maf = parseOBD(mafHex,'10');
-      let o2 = parseOBD(o2Hex,'14');
-      let ltft = parseOBD(ltftHex,'07');
-      
-      if(rpm!=null)document.getElementById('rpm').textContent = rpm;
-      if(coolant!=null)document.getElementById('coolant').textContent = coolant+'°';
-      if(speed!=null)document.getElementById('speed').textContent = speed;
-      if(maf!=null)document.getElementById('maf').textContent = maf;
-      if(o2!=null)document.getElementById('o2').textContent = o2;
-      if(ltft!=null)document.getElementById('ltft').textContent = ltft+'%';
-      
-      if(rpm!=null)updateChart(rpm);
-    }catch(e){console.log('OBD Poll Err', e);}
-  },1200);
-}
-
-let chartData = {labels:[], datasets:[{label:'RPM', data:[], borderColor:'#60a5fa'}]};
-function initChart(){if(chart)chart.destroy();chart=new Chart(document.getElementById('liveChart'),{type:'line',data:chartData,options:{animation:false,scales:{x:{display:false}}}});}
-function updateChart(rpm){
-  if(!chart) return;
-  chartData.labels.push('');
-  chartData.datasets[0].data.push(rpm);
-  if(chartData.labels.length>20){chartData.labels.shift();chartData.datasets[0].data.shift();}
-  chart.update();
-}
-// ===== GOD MODE v12.4 REAL OBD2 + DTC READ END =====
-
-function lookupDTC(){let code=document.getElementById('dtcInput').value.toUpperCase();let d=DTC_DB[code]||{desc:'Unknown',fix:'Check'};document.getElementById('dtcResult').innerHTML=`<div class="dtc-card"><b>${code}</b><br>${d.desc}<br>Fix: ${d.fix}</div>`;}
-
-function logJ2534(msg){document.getElementById('j2534Log').innerHTML+=`[${new Date().toLocaleTimeString()}] ${msg}<br>`;}
-async function startJ2534(){if(!ROLE_PERMS[CURRENT_ROLE].j2534)return showNotification('Admin only','err');let progress=0;let int=setInterval(()=>{progress+=10;document.getElementById('flashProgress').style.width=progress+'%';logJ2534(`Flash: ${progress}%`);if(progress>=100)clearInterval(int);},800);}
-
-async function startADAS(step){if(!ROLE_PERMS[CURRENT_ROLE].adas)return showNotification('No permission','err');let type=document.getElementById('adasType').value;if(step==='prep'){document.getElementById('adasStatus').innerHTML='Prepped ✓';}if(step==='cal'){setTimeout(()=>{document.getElementById('adasStatus').innerHTML='Success ✓';},2000);}if(step==='cert'){new jsPDF().text(`ADAS PASSED\n${type}`,20,20).save('ADAS_Cert.pdf');}}
-
-function programKey(){if(!ROLE_PERMS[CURRENT_ROLE].keys)return showNotification('No permission','err');keysProgrammed++;document.getElementById('keyStatus').textContent=`Keys: ${keysProgrammed}/4`;showNotification('Key OK');}
+function programKey(){if(!ROLE_PERMS[CURRENT_ROLE].keys)return showNotification('No permission','err');keysProgrammed++;document.getElementById('keyStatus').textContent=`Keys: ${keysProgrammed}/4`;showNotification('SIM Key OK');}
 
 function loadDVIPhoto(e){let ctx=document.getElementById('dviCanvas').getContext('2d');let img=new Image();img.onload=()=>ctx.drawImage(img,0,0,400,300);img.src=URL.createObjectURL(e.target.files[0]);}
-function aiDetectDamage(){let ctx=document.getElementById('dviCanvas').getContext('2d');ctx.strokeStyle='red';ctx.lineWidth=3;ctx.strokeRect(100,100,80,60);document.getElementById('dviNotes').value='AI: Dent R1200';}
+function aiDetectDamage(){let ctx=document.getElementById('dviCanvas').getContext('2d');ctx.strokeStyle='red';ctx.lineWidth=3;ctx.strokeRect(100,100,80,60);ctx.font='14px sans-serif';ctx.fillStyle='red';ctx.fillText('DENT R1200',110,90);document.getElementById('dviNotes').value='AI SIM: Front Bumper Dent R1200';}
 
-async function startRemote(){let stream=await navigator.mediaDevices.getDisplayMedia({video:true});document.getElementById('remoteVideo').srcObject=stream;}
+async function startRemote(){try{let stream=await navigator.mediaDevices.getDisplayMedia({video:true});document.getElementById('remoteVideo').srcObject=stream;showNotification('Screen Share Live');}catch(e){showNotification('Screen share denied','err');}}
 
-function startVoice(){let r=new (window.SpeechRecognition||window.webkitSpeechRecognition)();r.onresult=e=>{let cmd=e.results[0][0].transcript.toLowerCase();if(cmd.includes('dtc'))showTab('dtc',{target:document.querySelector('[data-tab="dtc"]')});};r.start();}
+function startVoice(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return showNotification('No mic support','err');let r=new SR();r.lang='en-ZA';r.onresult=e=>{let cmd=e.results[0][0].transcript.toLowerCase();if(cmd.includes('dtc'))showTab('dtc',{target:document.querySelector('[data-tab="dtc"]')});if(cmd.includes('job'))openSellModal();if(cmd.includes('obd'))showTab('diag',{target:document.querySelector('[data-tab="diag"]')});showNotification(`Voice: ${cmd}`);};r.start();}
 
-function aiEstimate(){if(!ROLE_PERMS[CURRENT_ROLE].price)return showNotification('No permission','err');let d=document.getElementById('jobDesc').value.toLowerCase();for(let k in AI_PRICING){if(d.includes(k)){let v=AI_PRICING[k];document.getElementById('partsPrice').value=v.parts;document.getElementById('labourPrice').value=v.labour*350;return;}}}
-function loadInventory(){allInventory=JSON.parse(localStorage.getItem('inv')||'[{"sku":"BRK001","name":"Pads","qty":3,"min":5,"price":850}]');renderInventory();}
+function aiEstimate(){if(!ROLE_PERMS[CURRENT_ROLE].price)return showNotification('No permission','err');let d=document.getElementById('jobDesc').value.toLowerCase();for(let k in AI_PRICING){if(d.includes(k)){let v=AI_PRICING[k];document.getElementById('partsPrice').value=v.parts;document.getElementById('labourPrice').value=Math.round(v.labour*350);showNotification(`AI: ${k} = R${v.parts + v.labour*350}`);return;}}showNotification('No AI match','err');}
 function renderInventory(){document.getElementById('inventoryTable').innerHTML=`<table class="table"><tr><th>SKU</th><th>Part</th><th>Qty</th></tr>`+allInventory.map(i=>`<tr><td>${i.sku}</td><td>${i.name}</td><td><span class="badge ${i.qty<i.min?'badge-low':''}">${i.qty}</span></td></tr>`).join('')+`</table>`;document.getElementById('statStock').textContent=allInventory.filter(i=>i.qty<i.min).length;}
-function addStock(){if(!ROLE_PERMS[CURRENT_ROLE].inv)return showNotification('No permission','err');let n=prompt('Part');if(n){allInventory.push({sku:'SKU'+Date.now(),name:n,qty:10,min:5,price:500});localStorage.setItem('inv',JSON.stringify(allInventory));renderInventory();}}
+async function addStock(){if(!ROLE_PERMS[CURRENT_ROLE].inv)return showNotification('No permission','err');let n=prompt('Part Name');if(!n)return;let ref=await db.collection('inventory').add({sku:'SKU'+Date.now(),name:n,qty:10,min:5,price:500});allInventory.push({id:ref.id,name:n,qty:10,min:5,price:500});renderInventory();showNotification('Stock Added ✓');}
 function scanBarcode(){startQRScanner();}
 function startQRScanner(){document.getElementById('qrReader').classList.remove('hidden');document.getElementById('stopBtnWrap').classList.remove('hidden');qrScanner=new Html5Qrcode("qrReader");qrScanner.start({facingMode:"environment"},{fps:10,qrbox:250},(txt)=>{document.getElementById('vinInput').value=txt.substring(0,17);stopQRScanner();decodeVIN();},()=>{});}
 function stopQRScanner(){if(qrScanner){qrScanner.stop().then(()=>qrScanner.clear()).catch(()=>{});}document.getElementById('qrReader').classList.add('hidden');document.getElementById('stopBtnWrap').classList.add('hidden');}
 function fillTestVIN(){document.getElementById('vinInput').value='1FTFW1E5XKF123456';decodeVIN();}
-async function decodeVIN(){let vin=document.getElementById('vinInput').value.trim().toUpperCase();if(vin.length!==17)return document.getElementById('vinError').textContent='17 digits';document.getElementById('vinLoading').classList.remove('hidden');let v=DEMO_VINS[vin.substring(0,9)]||{Make:'Unknown',Model:'',ModelYear:'N/A'};let fullName=`${v.Make} ${v.Model}`.trim();let pcd='Check';for(let k in PCD_DB){if(fullName.includes(k.split(' ')[0])){pcd=PCD_DB[k];break;}}currentVINData={make:fullName,year:v.ModelYear,pcd,vin};document.getElementById('vehicleMake').value=`${fullName} ${v.ModelYear}`;document.getElementById('vehiclePCD').value=`PCD: ${pcd}`;document.getElementById('vinResult').innerHTML=`<b>✓ ${fullName}</b><br>PCD: ${pcd}`;document.getElementById('vinResult').classList.remove('hidden');document.getElementById('vinLoading').classList.add('hidden');}
 
-function kioskCheckIn(){if(CURRENT_ROLE!=='reception'&&CURRENT_ROLE!=='admin')return showNotification('Reception only','err');let n=prompt('Name');if(n)showNotification('Checked: '+n);}
-function kioskSign(){showNotification('E-Signed');}
+async function decodeVIN(){
+  let vin=document.getElementById('vinInput').value.trim().toUpperCase();
+  if(vin.length!==17)return document.getElementById('vinError').textContent='17 digits required';
+  document.getElementById('vinLoading').classList.remove('hidden');document.getElementById('vinError').textContent='';
+  try{
+    let res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`);
+    if(!res.ok) throw 'API Error';
+    let data = await res.json();
+    let make = data.Results.find(x=>x.Variable==='Make')?.Value || 'Unknown';
+    let model = data.Results.find(x=>x.Variable==='Model')?.Value || '';
+    let year = data.Results.find(x=>x.Variable==='Model Year')?.Value || 'N/A';
+    let fullName=`${make} ${model}`.trim();
+    let pcd='Check';for(let k in PCD_DB){if(fullName.includes(k.split(' ')[0])){pcd=PCD_DB[k];break;}}
+    currentVINData={make:fullName,year,pcd,vin};
+    document.getElementById('vehicleMake').value=`${fullName} ${year}`;
+    document.getElementById('vehiclePCD').value=`PCD: ${pcd}`;
+    document.getElementById('vinResult').innerHTML=`<b>✓ ${fullName}</b><br>Year: ${year} | PCD: ${pcd}`;
+    document.getElementById('vinResult').classList.remove('hidden');
+  }catch(e){document.getElementById('vinError').textContent='VIN Lookup Failed. Try again.'}
+  document.getElementById('vinLoading').classList.add('hidden');
+}
 
-function loadJobs(){allJobs=JSON.parse(localStorage.getItem('jobs')||'[]');renderKanban();renderDashboard();}
+function kioskCheckIn(){if(CURRENT_ROLE!=='reception'&&CURRENT_ROLE!=='admin')return showNotification('Reception only','err');let n=prompt('Customer Name');if(n)showNotification('Checked In: '+n);}
+function kioskSign(){showNotification('E-Signed ✓');}
+
 function renderKanban(){['quote','work','wait','ready','paid'].forEach(s=>{let col=document.getElementById('col-'+s);if(!col)return;col.innerHTML=allJobs.filter(j=>j.status===s).map(j=>`<div class="job-card"><b>${j.make||'Car'}</b><br>${j.customer||'Customer'}<br>R${j.total||0}<br>${ROLE_PERMS[CURRENT_ROLE].create?`<button class="btn" style="padding:6px" onclick="moveJob('${j.id}','${{quote:'work',work:'wait',wait:'ready',ready:'paid'}[s]||'paid'}')">→</button>`:''}</div>`).join('')||'<div style="color:#6b7280;text-align:center;padding:20px">Empty</div>';});}
-function moveJob(id,s){let j=allJobs.find(x=>x.id===id);if(j){j.status=s;localStorage.setItem('jobs',JSON.stringify(allJobs));renderKanban();updateStats();}}
-function renderDashboard(){document.getElementById('dashboardList').innerHTML=allJobs.slice(0,6).map(j=>`<div class="card"><b>${j.make||'Car'}</b><br>${j.customer||'Customer'}<br>R${j.total||0}</div>`).join('');}
-function updateStats(){let paid=allJobs.filter(j=>j.status==='paid');document.getElementById('statRevenue').textContent='R'+paid.reduce((a,b)=>a+b.total||0,0).toLocaleString();document.getElementById('statJobs').textContent=allJobs.filter(j=>j.status!=='paid').length;document.getElementById('statStock').textContent=allInventory.filter(i=>i.qty<i.min).length;}
+async function moveJob(id,s){if(!ROLE_PERMS[CURRENT_ROLE].create)return;await db.collection('jobs').doc(id).update({status:s});loadJobs();}
+function renderDashboard(){document.getElementById('dashboardList').innerHTML=allJobs.slice(0,6).map(j=>`<div class="card"><b>${j.make||'Car'}</b><br>${j.customer||'Customer'}<br>R${j.total||0}</div>`).join('')||'<div class="card">No jobs yet</div>';}
+function updateStats(){let paid=allJobs.filter(j=>j.status==='paid');document.getElementById('statRevenue').textContent='R'+paid.reduce((a,b)=>a+(b.total||0),0).toLocaleString();document.getElementById('statJobs').textContent=allJobs.filter(j=>j.status!=='paid').length;document.getElementById('statStock').textContent=allInventory.filter(i=>i.qty<i.min).length;}
 
-function renderReports(){let paid=allJobs.filter(j=>j.status==='paid');let rev=paid.reduce((a,b)=>a+b.total||0,0);document.getElementById('reportStats').innerHTML=`<div class="card"><b>Revenue:</b> R${rev.toLocaleString()}<br><b>Jobs:</b> ${paid.length}<br><b>Keys:</b> ${keysProgrammed}</div>`;}
-function exportXero(){if(!ROLE_PERMS[CURRENT_ROLE].export)return showNotification('No permission','err');let csv='Date,Customer,Amount\n';allJobs.filter(j=>j.status==='paid').forEach(j=>{csv+=`${new Date().toISOString().split('T')[0]},${j.customer||'Cash'},${j.total||0}\n`;});let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv]));a.download='Xero.csv';a.click();}
+function renderReports(){let paid=allJobs.filter(j=>j.status==='paid');let rev=paid.reduce((a,b)=>a+(b.total||0),0);document.getElementById('reportStats').innerHTML=`<div class="card"><b>Revenue:</b> R${rev.toLocaleString()}<br><b>Jobs Paid:</b> ${paid.length}<br><b>Keys SIM:</b> ${keysProgrammed}</div>`;}
+function exportXero(){if(!ROLE_PERMS[CURRENT_ROLE].export)return showNotification('No permission','err');let csv='Date,Customer,Amount\n';allJobs.filter(j=>j.status==='paid').forEach(j=>{let d=j.createdAt?.seconds?new Date(j.createdAt.seconds*1000).toISOString().split('T')[0]:new Date().toISOString().split('T')[0];csv+=`${d},${j.customer||'Cash'},${j.total||0}\n`;});let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv]));a.download='Xero_Export.csv';a.click();}
 function exportSage(){exportXero();}
 
 function openSellModal(){if(!ROLE_PERMS[CURRENT_ROLE].create)return showNotification('No permission','err');document.getElementById('sellModal').classList.add('active');}
 function closeModal(e){if(!e||e.target.id==='sellModal'){stopQRScanner();document.getElementById('sellModal').classList.remove('active');}}
 function runAIQuote(){document.getElementById('jobDesc').value='brake pads';aiEstimate();openSellModal();}
 
-function createJobCard(){
+async function createJobCard(){
   if(!ROLE_PERMS[CURRENT_ROLE].create)return showNotification('No permission','err');
-  let id='job_'+Date.now();
   let newJob={
-    id,
     make: currentVINData?.make || document.getElementById('vehicleMake').value || 'Car',
     customer: document.getElementById('custName').value || 'Walk-in',
     total: parseFloat(document.getElementById('partsPrice').value||0) + parseFloat(document.getElementById('labourPrice').value||0),
-    status: 'quote'
+    status: 'quote',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
-  allJobs.push(newJob);
-  localStorage.setItem('jobs',JSON.stringify(allJobs));
-  closeModal();
-  renderKanban();
-  updateStats();
-  showNotification('JOB CREATED ✓');
+  await db.collection('jobs').add(newJob);
+  closeModal();loadJobs();
+  showNotification('JOB CREATED ✓ CLOUD SYNC');
 }
+
 // INIT
-loadJobs();
-loadInventory();
-updateStats();
+// Do nothing until user clicks Login
 </script>
 </body>
 </html>
